@@ -1,1 +1,1414 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Глава 1 — Скрипичный ключ</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=Raleway:wght@300;400;500&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 
+        :root {
+            --black: #0a0a0a;
+            --black-card: #131316;
+            --pink: #d4a0b0;
+            --pink-light: #e8bcc8;
+            --pink-dark: #b08090;
+            --green: #7aba7a;
+            --cream: #f8f4f6;
+            --text: #d0ccd0;
+            --text-muted: #787478;
+        }
+
+        @media (hover: hover) and (pointer: fine) {
+            *, *::before, *::after { cursor: none !important; }
+            .cursor, .cursor-follower { display: block; }
+        }
+        @media (hover: none), (pointer: coarse) {
+            .cursor, .cursor-follower { display: none !important; }
+        }
+
+        .cursor {
+            position: fixed;
+            width: 8px; height: 8px;
+            background: var(--pink);
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 10001;
+            mix-blend-mode: difference;
+        }
+
+        .cursor-follower {
+            position: fixed;
+            width: 40px; height: 40px;
+            border: 1px solid var(--pink);
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 10000;
+            transition: width 0.3s, height 0.3s, background 0.3s;
+        }
+
+        .cursor-follower.hover {
+            width: 60px; height: 60px;
+            background: rgba(212, 160, 176, 0.1);
+        }
+
+        body {
+            font-family: 'Raleway', sans-serif;
+            background: var(--black);
+            color: var(--text);
+            min-height: 100vh;
+            line-height: 1.85;
+            font-size: 17px;
+            overflow-x: hidden;
+        }
+
+        #bg-particles {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background-image:
+                linear-gradient(rgba(212, 160, 176, 0.01) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(212, 160, 176, 0.01) 1px, transparent 1px);
+            background-size: 40px 40px;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .floating-shapes {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            pointer-events: none;
+            z-index: 1;
+            overflow: hidden;
+        }
+
+        .shape {
+            position: absolute;
+            border: 1px solid var(--pink);
+            opacity: 0.03;
+        }
+
+        .shape:nth-child(1) { width: 70px; height: 70px; top: 20%; right: 8%; border-radius: 50%; animation: float1 28s ease-in-out infinite; }
+        .shape:nth-child(2) { width: 50px; height: 50px; bottom: 25%; left: 5%; animation: float2 32s ease-in-out infinite; }
+        .shape:nth-child(3) { width: 40px; height: 40px; top: 60%; right: 3%; transform: rotate(45deg); animation: float3 25s ease-in-out infinite; }
+
+        @keyframes float1 { 0%, 100% { transform: translateY(0) scale(1); } 50% { transform: translateY(-20px) scale(1.05); } }
+        @keyframes float2 { 0%, 100% { transform: rotate(0deg); } 50% { transform: rotate(180deg); } }
+        @keyframes float3 { 0%, 100% { transform: rotate(45deg); } 50% { transform: rotate(135deg); } }
+
+        .scroll-top {
+            position: fixed;
+            bottom: 30px; right: 30px;
+            width: 50px; height: 50px;
+            background: rgba(19, 19, 22, 0.6);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(212, 160, 176, 0.3);
+            color: var(--pink);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.3rem;
+            text-decoration: none;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.4s;
+            z-index: 99;
+        }
+
+        .scroll-top.visible { opacity: 1; visibility: visible; }
+        .scroll-top:hover { background: var(--pink); color: var(--black); border-color: var(--pink); }
+
+        .music-float {
+            position: fixed;
+            bottom: 30px; left: 30px;
+            z-index: 100;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 15px;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.4s;
+        }
+
+        .music-float.visible { opacity: 1; visibility: visible; }
+
+        .music-toggle {
+            width: 55px; height: 55px;
+            background: rgba(19, 19, 22, 0.6);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(212, 160, 176, 0.3);
+            color: var(--pink);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.4rem;
+            cursor: pointer;
+            transition: all 0.4s;
+        }
+
+        .music-toggle:hover,
+        .music-toggle.active {
+            background: rgba(212, 160, 176, 0.2);
+            border-color: var(--pink);
+        }
+
+        .music-toggle.playing {
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(212, 160, 176, 0.1); }
+            50% { box-shadow: 0 0 0 6px rgba(212, 160, 176, 0); }
+        }
+
+        .music-panel {
+            background: rgba(19, 19, 22, 0.85);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            border: 1px solid rgba(212, 160, 176, 0.2);
+            width: 320px;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(20px);
+            transition: all 0.4s;
+            overflow: hidden;
+        }
+
+        .music-panel.visible {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+
+        .player-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 18px;
+            border-bottom: 1px solid rgba(212, 160, 176, 0.1);
+        }
+
+        .player-title {
+            font-size: 0.75rem;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: var(--pink);
+        }
+
+        .player-close {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            font-size: 1.3rem;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .player-close:hover { color: var(--pink); transform: rotate(90deg); }
+
+        .now-playing {
+            padding: 18px;
+            text-align: center;
+        }
+
+        .track-cover {
+            width: 70px; height: 70px;
+            margin: 0 auto 12px;
+            border: 1px solid var(--pink);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.8rem;
+            color: var(--pink);
+            background: var(--black);
+        }
+
+        .track-name {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1.2rem;
+            color: var(--cream);
+            margin-bottom: 4px;
+        }
+
+        .track-artist {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+
+        .progress-wrap {
+            padding: 0 18px;
+            margin-bottom: 12px;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.1);
+            cursor: pointer;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--pink), var(--pink-light));
+            width: 0%;
+            transition: width 0.1s;
+        }
+
+        .time-display {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            margin-top: 6px;
+        }
+
+        .player-controls {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 15px;
+            padding: 12px 18px;
+            border-top: 1px solid rgba(212, 160, 176, 0.1);
+        }
+
+        .control-btn {
+            width: 36px; height: 36px;
+            border: 1px solid var(--pink);
+            background: transparent;
+            color: var(--pink);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 0.9rem;
+        }
+
+        .control-btn:hover { background: var(--pink); color: var(--black); }
+        .control-btn.play { width: 44px; height: 44px; font-size: 1.1rem; }
+
+        .volume-wrap {
+            padding: 12px 18px;
+            border-top: 1px solid rgba(212, 160, 176, 0.1);
+        }
+
+        .volume-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .volume-label {
+            font-size: 0.65rem;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            color: var(--text-muted);
+        }
+
+        .volume-value {
+            font-size: 0.7rem;
+            color: var(--pink);
+        }
+
+        .volume-slider {
+            width: 100%;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.1);
+            appearance: none;
+            cursor: pointer;
+        }
+
+        .volume-slider::-webkit-slider-thumb {
+            appearance: none;
+            width: 12px; height: 12px;
+            background: var(--pink);
+            border-radius: 50%;
+            cursor: pointer;
+        }
+
+        .tracks-list {
+            max-height: 120px;
+            overflow-y: auto;
+            border-top: 1px solid rgba(212, 160, 176, 0.1);
+        }
+
+        .track-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 18px;
+            cursor: pointer;
+            transition: all 0.3s;
+            border-bottom: 1px solid rgba(212, 160, 176, 0.05);
+        }
+
+        .track-item:hover { background: rgba(212, 160, 176, 0.05); }
+        .track-item.active { background: rgba(212, 160, 176, 0.08); }
+        .track-item.active .track-item-name { color: var(--pink); }
+
+        .track-num {
+            width: 22px; height: 22px;
+            border: 1px solid var(--text-muted);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.65rem;
+            color: var(--text-muted);
+            flex-shrink: 0;
+        }
+
+        .track-item.active .track-num,
+        .track-item:hover .track-num {
+            border-color: var(--pink);
+            color: var(--pink);
+        }
+
+        .track-item-info { flex: 1; min-width: 0; }
+        .track-item-name { font-size: 0.85rem; color: var(--cream); }
+        .track-item-artist { font-size: 0.7rem; color: var(--text-muted); }
+
+        .container {
+            position: relative;
+            z-index: 2;
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 50px 50px 120px;
+        }
+
+        .nav-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 50px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid rgba(212, 160, 176, 0.08);
+            flex-wrap: wrap;
+            gap: 15px;
+            opacity: 0;
+            animation: fadeIn 0.6s ease forwards;
+        }
+
+        @keyframes fadeIn {
+            to { opacity: 1; }
+        }
+
+        .nav-top a {
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 0.85rem;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            transition: all 0.3s;
+        }
+
+        .nav-top a:hover { color: var(--pink); }
+        .nav-top a.disabled { opacity: 0.3; pointer-events: none; }
+        .nav-center { color: var(--pink); font-size: 0.85rem; }
+
+        .chapter-header {
+            text-align: center;
+            margin-bottom: 50px;
+            opacity: 0;
+            animation: fadeUp 0.8s ease 0.2s forwards;
+        }
+
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .chapter-label {
+            font-size: 0.8rem;
+            letter-spacing: 4px;
+            text-transform: uppercase;
+            color: var(--pink);
+            margin-bottom: 12px;
+        }
+
+        .chapter-number {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 5rem;
+            font-weight: 300;
+            color: var(--cream);
+            line-height: 1;
+            margin-bottom: 15px;
+        }
+
+        .chapter-title {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 2.2rem;
+            font-weight: 400;
+            color: var(--cream);
+            margin-bottom: 12px;
+        }
+
+        .chapter-date {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        .chapter-divider {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 18px;
+            margin-top: 30px;
+        }
+
+        .chapter-divider span {
+            width: 60px;
+            height: 1px;
+            background: var(--pink);
+        }
+
+        .divider-diamond {
+            width: 10px; height: 10px;
+            border: 1px solid var(--pink);
+            transform: rotate(45deg);
+            animation: diamondSpin 8s linear infinite;
+        }
+
+        @keyframes diamondSpin {
+            from { transform: rotate(45deg); }
+            to { transform: rotate(405deg); }
+        }
+
+        .author-note {
+            background: var(--black-card);
+            border: 1px solid rgba(212, 160, 176, 0.08);
+            padding: 25px 30px;
+            margin-bottom: 45px;
+            opacity: 0;
+            animation: fadeUp 0.8s ease 0.4s forwards;
+        }
+
+        .author-note-title {
+            font-size: 0.8rem;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: var(--pink);
+            margin-bottom: 15px;
+        }
+
+        .author-note-content {
+            font-size: 0.95rem;
+            color: var(--text-muted);
+            line-height: 1.8;
+        }
+
+        .music-section {
+            background: var(--black-card);
+            border: 1px solid rgba(212, 160, 176, 0.08);
+            padding: 20px 25px;
+            margin-bottom: 45px;
+            opacity: 0;
+            animation: fadeUp 0.8s ease 0.5s forwards;
+        }
+
+        .music-section-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .music-label {
+            font-size: 0.8rem;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            color: var(--pink);
+        }
+
+        .music-hint {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+
+        .music-tracks {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .music-track-btn {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 16px;
+            background: transparent;
+            border: 1px solid rgba(212, 160, 176, 0.15);
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .music-track-btn:hover {
+            border-color: var(--pink);
+            color: var(--pink);
+            transform: translateY(-2px);
+        }
+
+        .chapter-content {
+            font-size: 1.15rem;
+            line-height: 1.9;
+            color: var(--text);
+            text-align: left;
+            opacity: 0;
+            animation: fadeUp 0.8s ease 0.6s forwards;
+        }
+
+        .chapter-content p {
+            margin-bottom: 1.5em;
+        }
+
+        .chapter-content p:first-of-type::first-letter {
+            float: left;
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 4.5rem;
+            line-height: 0.8;
+            padding-right: 15px;
+            padding-top: 8px;
+            color: var(--pink);
+            font-weight: 500;
+        }
+
+        .thought {
+            padding: 18px 25px;
+            margin: 1.8em 0;
+            border-left: 3px solid var(--pink);
+            background: rgba(212, 160, 176, 0.02);
+            font-style: italic;
+            color: var(--text-muted);
+        }
+
+        .dialogue {
+            color: var(--cream);
+            position: relative;
+            padding-left: 1.5em;
+        }
+
+        .dialogue::before {
+            content: '—';
+            position: absolute;
+            left: 0;
+            color: var(--pink);
+            font-weight: 500;
+        }
+
+        .scene-break {
+            text-align: center;
+            margin: 2.5em 0;
+            color: var(--pink);
+            font-size: 1.5rem;
+            letter-spacing: 0.5em;
+            opacity: 0.5;
+        }
+
+        .chat-container {
+            margin: 1.8em 0;
+            padding: 20px;
+            background: rgba(19, 19, 22, 0.6);
+            border: 1px solid rgba(212, 160, 176, 0.1);
+        }
+
+        .chat-message {
+            margin-bottom: 15px;
+            max-width: 85%;
+        }
+
+        .chat-message:last-child {
+            margin-bottom: 0;
+        }
+
+        .chat-message.sent {
+            margin-left: auto;
+        }
+
+        .chat-sender {
+            font-size: 0.75rem;
+            color: var(--pink);
+            margin-bottom: 5px;
+            letter-spacing: 1px;
+        }
+
+        .chat-message.sent .chat-sender {
+            text-align: right;
+        }
+
+        .chat-bubble {
+            padding: 12px 16px;
+            background: rgba(212, 160, 176, 0.08);
+            border: 1px solid rgba(212, 160, 176, 0.15);
+            font-size: 0.95rem;
+            line-height: 1.6;
+            color: var(--cream);
+        }
+
+        .chat-message.sent .chat-bubble {
+            background: rgba(212, 160, 176, 0.12);
+            border-color: rgba(212, 160, 176, 0.25);
+        }
+
+        .chat-reaction {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            font-style: italic;
+            margin-top: 8px;
+            text-align: right;
+        }
+
+        .chapter-nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 60px;
+            padding-top: 35px;
+            border-top: 1px solid rgba(212, 160, 176, 0.08);
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .chapter-nav a,
+        .chapter-nav button {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 0.85rem;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            padding: 15px 25px;
+            border: 1px solid rgba(212, 160, 176, 0.15);
+            background: transparent;
+            cursor: pointer;
+            transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .chapter-nav a::before,
+        .chapter-nav button::before {
+            content: '';
+            position: absolute;
+            top: 0; left: -100%;
+            width: 100%; height: 100%;
+            background: var(--pink);
+            transition: left 0.3s;
+            z-index: -1;
+        }
+
+        .chapter-nav a:hover,
+        .chapter-nav button:hover {
+            color: var(--black);
+            border-color: var(--pink);
+        }
+
+        .chapter-nav a:hover::before,
+        .chapter-nav button:hover::before { left: 0; }
+
+        .chapter-nav a.disabled { opacity: 0.3; pointer-events: none; }
+
+        .mark-read-btn.read {
+            background: var(--pink);
+            color: var(--black);
+            border-color: var(--pink);
+        }
+
+        @media (max-width: 768px) {
+            body { font-size: 15px; }
+            .container { padding: 30px 20px 100px; }
+            .chapter-content { font-size: 1rem; line-height: 1.8; }
+            .chapter-number { font-size: 3.5rem; }
+            .chapter-title { font-size: 1.7rem; }
+            .chapter-nav { flex-direction: column; }
+            .chapter-nav a, .chapter-nav button { width: 100%; justify-content: center; }
+            .thought { padding: 15px 18px; }
+            .author-note { padding: 18px 22px; }
+            .floating-shapes { display: none; }
+
+            .scroll-top {
+                bottom: 20px;
+                right: 20px;
+                width: 44px;
+                height: 44px;
+                opacity: 0.6;
+            }
+            .scroll-top.visible { opacity: 0.6; }
+            .scroll-top:active { opacity: 1; }
+
+            .music-float { left: 20px; bottom: 20px; }
+
+            .music-toggle {
+                width: 44px;
+                height: 44px;
+                font-size: 1.2rem;
+                opacity: 0.6;
+            }
+            .music-toggle.active,
+            .music-toggle:active { opacity: 1; }
+
+            .music-panel {
+                width: calc(100vw - 40px);
+                max-width: 280px;
+            }
+
+            .now-playing { padding: 12px; }
+            .track-cover { width: 50px; height: 50px; font-size: 1.4rem; margin-bottom: 8px; }
+            .track-name { font-size: 1rem; }
+            .track-artist { font-size: 0.75rem; }
+
+            .progress-wrap { padding: 0 12px; margin-bottom: 10px; }
+            .time-display { font-size: 0.65rem; }
+
+            .player-controls { padding: 10px 12px; gap: 12px; }
+            .control-btn { width: 32px; height: 32px; font-size: 0.8rem; }
+            .control-btn.play { width: 38px; height: 38px; font-size: 1rem; }
+
+            .volume-wrap { padding: 10px 12px; }
+            .volume-label { font-size: 0.6rem; }
+            .volume-value { font-size: 0.65rem; }
+
+            .tracks-list { max-height: 90px; }
+            .track-item { padding: 8px 12px; gap: 8px; }
+            .track-num { width: 18px; height: 18px; font-size: 0.6rem; }
+            .track-item-name { font-size: 0.8rem; }
+            .track-item-artist { font-size: 0.65rem; }
+
+            .player-header { padding: 12px 14px; }
+            .player-title { font-size: 0.7rem; }
+            .player-close { font-size: 1.1rem; }
+
+            .chat-container { padding: 15px; }
+            .chat-message { max-width: 95%; }
+            .chat-bubble { padding: 10px 14px; font-size: 0.9rem; }
+        }
+
+        html {
+            scroll-behavior: smooth;
+            scrollbar-width: none;
+        }
+
+        body::-webkit-scrollbar {
+            display: none;
+        }
+
+        body {
+            -ms-overflow-style: none;
+        }
+
+        .custom-scrollbar {
+            position: fixed;
+            top: 0;
+            right: 0;
+            width: 6px;
+            height: 100vh;
+            background: #0a0a0a;
+            z-index: 9999;
+        }
+
+        .scrollbar-thumb {
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 6px;
+            background: #b08090;
+            transition: background 0.3s;
+        }
+
+        .scrollbar-thumb:hover {
+            background: #d4a0b0;
+        }
+    </style>
+</head>
+<body>
+    <div class="custom-scrollbar">
+        <div class="scrollbar-thumb" id="scrollThumb"></div>
+    </div>
+    <div class="cursor"></div>
+    <div class="cursor-follower"></div>
+    <canvas id="bg-particles"></canvas>
+
+    <div class="floating-shapes">
+        <div class="shape"></div>
+        <div class="shape"></div>
+        <div class="shape"></div>
+    </div>
+
+    <a href="#top" class="scroll-top" id="scrollTop">↑</a>
+
+    <!-- ПЛЕЕР -->
+    <div class="music-float" id="musicFloat">
+        <div class="music-panel" id="musicPanel">
+            <div class="player-header">
+                <span class="player-title">♪ Плейлист</span>
+                <button class="player-close" onclick="togglePlayer()">✕</button>
+            </div>
+            <div class="now-playing">
+                <div class="track-cover" id="trackCover">♪</div>
+                <div class="track-name" id="trackName">Выбери трек</div>
+                <div class="track-artist" id="trackArtist">—</div>
+            </div>
+            <div class="progress-wrap">
+                <div class="progress-bar" id="progressBar" onclick="seekTrack(event)">
+                    <div class="progress-fill" id="progressFill"></div>
+                </div>
+                <div class="time-display">
+                    <span id="currentTime">0:00</span>
+                    <span id="duration">0:00</span>
+                </div>
+            </div>
+            <div class="player-controls">
+                <button class="control-btn" onclick="prevTrack()">⏮</button>
+                <button class="control-btn play" id="playBtn" onclick="togglePlay()">▶</button>
+                <button class="control-btn" onclick="nextTrack()">⏭</button>
+            </div>
+            <div class="volume-wrap">
+                <div class="volume-header">
+                    <span class="volume-label">◈ Громкость</span>
+                    <span class="volume-value" id="volumeValue">30%</span>
+                </div>
+                <input type="range" class="volume-slider" id="volumeSlider" min="0" max="100" value="30" oninput="setVolume(this.value)">
+            </div>
+            <div class="tracks-list">
+                <div class="track-item" data-index="0" onclick="playTrack(0)">
+                    <div class="track-num">1</div>
+                    <div class="track-item-info">
+                        <div class="track-item-name">лазить по стенам</div>
+                        <div class="track-item-artist">Zhanulka</div>
+                    </div>
+                </div>
+                <div class="track-item" data-index="1" onclick="playTrack(1)">
+                    <div class="track-num">2</div>
+                    <div class="track-item-info">
+                        <div class="track-item-name">Мою первую любовь звали ненависть</div>
+                        <div class="track-item-artist">Алена Швец</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <button class="music-toggle" id="musicToggle" onclick="togglePlayer()"><span>♪</span></button>
+    </div>
+
+    <div class="container" id="top">
+        <nav class="nav-top">
+            <a href="../treble-clef.html">← К оглавлению</a>
+            <span class="nav-center">Глава 1 из 2</span>
+            <a href="chapter-2.html">Глава 2 →</a>
+        </nav>
+
+        <header class="chapter-header">
+            <div class="chapter-label">Глава</div>
+            <div class="chapter-number">I</div>
+            <h1 class="chapter-title">Настанет день ослепительный</h1>
+            <div class="chapter-date">26 июля 2025 г., 21:25</div>
+            <div class="chapter-divider">
+                <span></span>
+                <div class="divider-diamond"></div>
+                <span></span>
+            </div>
+        </header>
+
+        <div class="author-note">
+            <div class="author-note-title">Примечания автора</div>
+            <div class="author-note-content">
+                Мои прекрасные, я снова здесь с новым фанфиком и первой главой к нему 🥳🥳🥳 безумно рада просто, очень хочу уже показать вам эту историю, так что не буду вас задерживать)<br><br>
+                Приятного прочтения 💞
+            </div>
+        </div>
+
+        <div class="music-section">
+            <div class="music-section-header">
+                <span class="music-label">♪ Песенки к главе</span>
+                <span class="music-hint">Нажми, чтобы включить</span>
+            </div>
+            <div class="music-tracks">
+                <button class="music-track-btn" onclick="playTrackAndShowPlayer(0)">
+                    <span>▶</span> Zhanulka — лазить по стенам
+                </button>
+                <button class="music-track-btn" onclick="playTrackAndShowPlayer(1)">
+                    <span>▶</span> Алена Швец — Мою первую любовь звали ненависть
+                </button>
+            </div>
+        </div>
+
+        <article class="chapter-content">
+            <p>Август, нетипично дождливый в этом году, еще сохранял отголоски теплой летней погоды. Однако даже редкие солнечные деньки радовали все меньше. Лето кончалось, а значит совсем скоро должна была начаться учеба.</p>
+
+            <p>Ежегодно повторялось все одно и то же, казалось бы, к чему все эти нервы? Да только в отличие от всех предыдущих годов, этот обещал быть не только последним, но и крайне тяжелым. И нет, к сожалению, даже не из-за экзаменов. Сейчас Кадзуху волновала вещь гораздо более непредсказуемая, чем экзамены — перераспределение.</p>
+
+            <p>Как будто не хватило того, что случилось после девятого, и вот опять учеников просто взяли и раскидали по разным классам, совершенно не заботясь о том, что дети только привыкли к новым одноклассникам. Теперь новый учебный год, судя по всему, начнется не с линеек и вводных уроков, а с попыток найти новые знакомства (или, правильнее будет сказать, подружиться с теми, с кем поругался в прошлом году).</p>
+
+            <p>Кадзуха уже начитался в школьном чате, что к ним с каким-то невероятным энтузиазмом перевелось несколько учеников с других школ. Смешивать параллель между собой и сталкивать подростков, которые друг с другом и не планировали общаться, так еще и подселять к ним целую ораву совершенно новых людей — самое то в последний год, когда единственным поводом для переживаний хотелось видеть экзамены.</p>
+
+            <p>Уведомления в общий чат все приходили и приходили. Кадзуха с какой-то необъяснимой тревогой следил за тем, как на сообщения, которые даже не успели прогрузиться, мгновенно отвечали. Казалось, что все очень быстро смирились с изменениями и принялись знакомиться друг с другом заново, налаживать связи.</p>
+
+            <p>С таким скепсисом ко всему этому движению Кадзуха относился неспроста. Он очень хорошо помнил, что происходило в прошлом году. Мешать избалованных своими родителями и безнаказанностью подростков с теми, кто буквально выгрызал себе место под солнцем всю среднюю школу было ошибкой.</p>
+
+            <p>У Кадзухи на виске до сих пор красовался шрам от драки. С чего она началась никто не помнил. Кто-то на кого-то огрызнулся, не рассчитав собственные силы и возможности, так и завязалось. Кадзуха тогда вступился за лучшего друга, который, по итогу, не выдержав буллинга, перевелся в другую школу. Из-за чего они потом перестали общаться тоже только бог и знает.</p>
+
+            <p>Все происходило само по инерции. Первая половина десятого класса прошла под знаком пассивной и не только агрессии. Смелые из избалованных не упускали возможность постебаться с тех, кому иногда и на обед в столовой не хватало, пока те очень радикальными методами показывали и заново устанавливали свое место в иерархии.</p>
+
+            <p>Кадзуха в основном наблюдал за этим со стороны. Он не был ребенком богатых родителей, но и бедным его назвать было нельзя. Кадзуха не ввязывался ни в какие сомнительные отношения, в плохих компаниях долго не задерживался, ни к каким субкультурам примазываться не пытался.</p>
+
+            <p>Жить спокойную тихую жизнь ему хотелось гораздо больше, чем выяснять со всеми отношения и пытаться отстоять свое место в придуманной кем-то «пищевой цепочке». Кадзухе хватало проблем и недопониманий дома, так что в школе он чаще всего не отсвечивал. За внешний вид, конечно, иногда получал пару едких комментариев вслед, но кто с этим не сталкивался за школьную жизнь?</p>
+
+            <p>Закрыв общий чат, Кадзуха потер виски, чтобы унять головную боль. Пальцы сами собой дотронулись до шрама. Взгляд упал на воробья, который, видимо, прятался от дождя под навесом снаружи окна. Кратко выдохнув, Кадзуха подошел к зеркалу в пол.</p>
+
+            <p>В нем отразилась вылизанная до блеска комната и темнота вечера, дождь за окном. На вешалке в шкафу висела пара новых рубашек, а на стуле лежали идеально выглаженные заранее брюки. Кадзуха внимательно осмотрел себя в зеркале.</p>
+
+            <p>В этом году он не хотел повторять старых ошибок. Хоть и казалось, судя по чату, что в этот раз все выбрали тактику «сдружиться и найти компанию» вместо драк, ругани и попыток выяснить, кто прав, а кто виноват, Кадзуха не хотел рисковать. У него не было своей компании или даже близкого друга, а остальные, по-видимому, уже подыскивали кандидатов на формирование отдельных группок друзей.</p>
+
+            <p>Кадзуха не хотел попасть под прицел таких компаний, так что, несмотря на свое относительное равнодушие к общественному мнению, попытался привести свой внешний вид в хотя бы относительный порядок. В прошлом году комментарии прилетали в адрес его длинных волос. Что ж, всего пара щелчков ножницами и неаккуратные длинные пряди у лица подкрутились вверх, превращаясь в подобие челки.</p>
+
+            <p>Еще немного поколдовав у зеркала, Кадзуха сумел найти прическу, которая скрывала часть его длинных волос. Низкий хвост колыхался где-то сзади, а у лица остались лишь короткие пряди, образующие симметричную челку со странным отростком посередине. Кадзуха оставил так.</p>
+
+            <p>Почти все лето он или гулял в одиночестве, или ездил на велике, находя новые места для отдыха и наслаждаясь природой, так что ноги накачались, а пара килограмм просто испарилась. Возможно теперь Кадзуха выглядел чуть более… обычно, приземленно.</p>
+
+            <p class="dialogue">Что это?— достаточно тихо, но с явным недовольством поинтересовалась мама, намывающая посуду.</p>
+
+            <p>Кадзуха, обойдя ее, выкинул бумагу с отстриженными волосами.</p>
+
+            <p class="dialogue">Стрижка.</p>
+
+            <p>Голос его был еще тише и спокойнее, чем мамин. Разница была лишь в том, что мать Кадзухи сидела на седативных, а он сам просто был слишком пассивным.</p>
+
+            <p class="dialogue">Стрижка?— оторвавшись от посуды, женщина повернулась чуть сильнее, разглядывая новую прическу сына.</p>
+
+            <p>Ее лицо сначала не выражало никаких эмоций, а потом она, наконец, спокойно улыбнулась, даже тембр голоса сменился:</p>
+
+            <p class="dialogue">Тебе так лучше.</p>
+
+            <p>Сухие губы Кадзухи растянулись в ответной улыбке.</p>
+
+            <p class="dialogue">Спасибо.</p>
+
+            <p class="dialogue">Как там одноклассники?</p>
+
+            <p class="dialogue">Нормально. Я спать.</p>
+
+            <p>Мать Кадзухи кивнула, вздыхая, и вернулась к посуде, намывая ее до блеска.</p>
+
+            <p class="dialogue">Отдыхай. Последние деньки спокойные… а там экзамены, поступление, боже, боже…</p>
+
+            <p class="dialogue">Расслабься, еще куча времени,— успокоил Кадзуха и быстро вышел из кухни, чтобы не нервировать и без того неспокойную мать.</p>
+
+            <p>И правда, лето заканчивалось, и совсем скоро этот неумолкаемый чат из телефона перенесется в реальность. Кадзуха не мог не нервничать по этому поводу. Он довольно легко переживал изменения и быстро адаптировался, но почему-то тяжело становилось от мысли, что его ждал еще один год в полном одиночестве и попытках избежать внимания не особо приятных личностей.</p>
+
+            <p>В этот раз Кадзуха даже не врал, что пошел спать. Закрыв дверь на защелку, он улегся под одеяло, и черт дернул его зайти в чат последний раз перед сном. Помимо сотни непрочитанных сообщений внимание парня привлекло количество людей в чате.</p>
+
+            <p>Кадзуха был уверен, что их было двадцать четыре, когда он выходил на кухню, а теперь стало уже двадцать шесть. Значит новенькие…</p>
+
+            <p>От этой мысли Кадзухе, на удивление, стало немного спокойнее. Может быть, и правда, среди новых лиц он наконец-то найдет кого-то, с кем можно будет просто дружить и общаться? Недолго музыка играла, недолго фраер танцевал.</p>
+
+            <p>Лицо Кадзухи опять сделалось спокойно-отрешенным, когда он заметил, что первым из добавленных в чат был бот, а второй парень… был не совсем новеньким. Судя по его общению с парой других человек в группе, у него уже были друзья с этой школы, а значит Кадзуха априори опоздал.</p>
+
+            <p>Такой расклад на ночь глядя его окончательно добил, но вместо того, чтобы просто положить телефон и уснуть, он решил все-таки взглянуть на новенького. Фото долго не грузилось, как обычно проблемы со связью, но спустя пару мгновений Кадзухе все-таки удалось увидеть лицо незнакомого пока парня.</p>
+
+            <p>Настоящим именем он нигде не подписывался. В описании стояло какое-то непонятное предложение, видимо, строчка из песни, ник состоял из набора непонятных букв и символов, а на аватарке красовалось фото с недавнего дня города.</p>
+
+            <p>Кадзуха сразу узнал эти декорации на фоне, потому что и сам ходил на площадь, чтобы хоть чуть-чуть окунуться в атмосферу праздника. Плохое качество, видимо, было не случайностью, а оригинальной идеей, так что лицо, точнее, то немногое от него, что можно было разглядеть, выглядело мыльным и немного пиксельным. Все, что Кадзухе удалось понять — фото было вырезкой из группового селфи, а сам «Скара», как его назвали в чате, красил волосы, ногти и, судя по всему, глаза.</p>
+
+            <p>От сердца сразу отлегло, когда Кадзуха понял, что теперь не он один будет привлекать излишнее внимание своим внешним видом. Альбинос и панк. Оставалось лишь догадываться, кого невзлюбят быстрее.</p>
+
+            <p>Кадзуха не стал долго задерживаться на фотографии и на новеньком в принципе, так что, отложив телефон, отвернулся к стенке и очень быстро уснул под звуки дождя. Проблемы стоило решать по мере их поступления, и пока у парня проблема была только одна — выспаться, чтобы мешки под почти прозрачной кожей были не такими уж пугающими.</p>
+
+            <div class="scene-break">◆ ◆ ◆</div>
+
+            <p class="dialogue">Привет.</p>
+
+            <p class="dialogue">Привет,— тихо ответил Кадзуха, отворачивая голову от окна.</p>
+
+            <p>Класс заполнялся людьми. Многие лица Кадзухе были знакомы, но лишь с параллели, которая состояла сразу из четырех битком набитых классов. Большинство людей были просто знакомыми, а тех, с кем Кадзуха учился, он с трудом мог назвать даже приятелями. Слишком плотное змеиное гнездо они свили в прошлых годах, чтобы водиться с ними.</p>
+
+            <p>Даже Фишль, только что поздоровавшаяся с ним, села с девчонкой с ранее другого класса.</p>
+
+            <p>Чем больше парт становилось занятыми, тем лучше Кадзуха понимал плачевность своего положения. Только со звонком забежавший очень внезапно Венти скооперировался и подсел к единственному знакомому парню.</p>
+
+            <p class="dialogue">Привет.</p>
+
+            <p class="dialogue">Привет,— все также сухо с придыханием ответил Кадзуха.</p>
+
+            <p>Тем не менее, он был очень рад, что не остался сидеть один. Все парты о чем-то шушукались, смеялись, знакомились. Как же это отличалось от прошлого года… Неужели все так повзрослели? Или просто вырос уровень лицемерия?</p>
+
+            <p>Совсем недавно дрались из-за разницы в финансовом и не только положении, а теперь так быстро группировались, чтобы, не дай бог, не остаться одним и не стать легкой мишенью.</p>
+
+            <p class="dialogue">Дурдом,— достаточно лаконично подытожил Венти, укладывая подбородок на ладони, и своими огромными голубыми глазами принялся следить за обстановкой в классе.</p>
+
+            <p class="dialogue">Да не говори,— поддержал Кадзуха, хоть с Венти они и не были друзьями.</p>
+
+            <p>До этого они пять лет учились вместе в средней школе и, на удивление, остались вместе после прошлого переформирования. Венти тоже доводилось влезать в драки, но из-за других проблем и непониманий. В общем и целом, с Кадзухой они суммарно проучились достаточно долго, чтобы сейчас вместо того, чтобы вить змеиные гнезда непонятно с кем, сесть и не отсвечивать хотя бы первое время.</p>
+
+            <p class="dialogue">Когда уже новенькие придут,— словно расстроенный щенок, заскулил Венти.</p>
+
+            <p class="dialogue">Новенькие?— удивился Кадзуха множественному числу, на что получил удивленный взгляд широко распахнутых голубых глаз.</p>
+
+            <p class="dialogue">Ну да. Тот парень, который общается с рыжим и Лайлой, и девушка какая-то.</p>
+
+            <p class="dialogue">Так а в группе же только Скара был, нет?</p>
+
+            <p class="dialogue">Да какая разница, кто в группе был. Точно девчонка будет еще.</p>
+
+            <p>Кадзуха спорить не стал, как и дожидаться новеньких. Вводный урок учитель начал и без них, почти не заморачиваясь над содержательностью.</p>
+
+            <p>Наконец, спустя минут десять в дверях сначала появилась та самая обещанная девушка. Извинившись за опоздание, она быстро прошмыгнула в конец кабинета, садясь с Шарлоттой. Кадзуха не стал разглядывать новую одноклассницу.</p>
+
+            <p>Все равно Венти всего через пару секунд внимательного, совершенно бесстыдного осмотра заявил.</p>
+
+            <p class="dialogue">Тоже блондинка платиновая, голубые пряди точно крашенные, а вот блонд не знаю. Глаза натуральные или линзы, интересно?— разговаривал он сам с собой.</p>
+
+            <p>Венти был чем-то вроде радио. Кадзуха мог даже не смотреть в сторону новенькой, но точно знал, что услышит о ней все, что ему сейчас нужно. Но вот спустя всего пару минут в дверях появился и парень со дня города…</p>
+
+            <p>Вот тут-то Кадзуха неожиданно для себя самого задержался на нем взглядом. Судя по раскованности движений и небрежному, довольно тихому извинению, Скара точно был из тех, кому общественное мнение нравилось вертеть.</p>
+
+            <p>Тем не менее, природа наградила довольно дерзкого с первого взгляда парня хоть и выразительными, все еще очень кукольными чертами лица. Кадзуха, не обладающий даже прекрасным зрением, сидя в очках, сумел разглядеть в новеньком фарфоровую куклу.</p>
+
+            <p>Он не обратил внимания на детали, да и не стремился никогда их разглядывать. Но даже общей сложившейся картины было достаточно, чтобы понять: если парни и придерутся за внешний вид, то девчонки точно не оставят новенького без своего внимания.</p>
+
+            <p>Кажется, между панком и альбиносом все же выиграет первый. Хотя Кадзуха не брался утверждать, что именно творилось в голове Скары, когда он приходил на первое сентября в черных джинсах и белой майке. Даже учитель кашлянул многозначительно, но не стал акцентировать на этом внимание, чтобы не донимать хотя бы новых учеников.</p>
+
+            <p class="dialogue">К Лайле сел. Майка с Нирваной, может рокер. Хотя, судя по прическе…</p>
+
+            <p class="dialogue">Панк?</p>
+
+            <p class="dialogue">Ты в каком году, Каз?— Венти усмехнулся,— хотя фиг его знает. Или музыкант, или нефор.</p>
+
+            <p class="dialogue">Что бы это ни значило,— Кадзуха подытожил так, будто не разбирался в этих обозначениях, хотя, на деле, конечно, понял, о чем говорил Венти.</p>
+
+            <p>Он просто не стал спорить. Так или иначе, Скара его совершенно не волновал. Уж от кого от кого, а от неформала в огромных джинсах Кадзуха в последнюю очередь ждал удар в спину.</p>
+
+            <p>Гораздо больше его волновали компании, которые сформировались очень быстро. Видимо, все выучили урок прошлого года и сразу нашли, чьей поддержкой заручиться в случае чего. Как и говорил Венти, полнейший дурдом.</p>
+
+            <p>Школа Кадзухи была относительно новой и находилась в спальном районе, который, тем не менее, славился некоторым своим неблагополучием. Откровенной чернухи здесь не происходило, но детей-беспризорников, маргиналов и алкоголиков хватало.</p>
+
+            <p>Тем не менее, школа, относительно новая, привлекала как местных жителей, так и богатых родителей, которые стремились отдать своих чад в как можно более навороченную школу. На деле же, многое здесь очень быстро приходило в негодность и даже не ремонтировалось.</p>
+
+            <p>К чему все это? Да к тому, что Скара Кадзухе сразу показался ребенком богатых родителей. Не похож был на беднягу из неблагополучной семьи. Даже в закрытых жестах его читалось пренебрежительное отношение ко всем, кто был рядом, так что под внешним спокойствием Скара явно скрывал высокомерие.</p>
+
+            <p>Да и одежда его была модной, вполне чистой и новой, не похожа на ту, что носят, когда каждая копейка на счету.</p>
+
+            <p>Первый урок прошел спокойно. На второй, посвященный истории, заставили остаться всех. Венти на перемене пулей вылетел из кабинета, чтобы среди других классов найти друга с параллели. Кадзухе бежать было не к кому, так что он остался сидеть один.</p>
+
+            <p>Кто-то выходил в коридор, кто-то в туалет, кто-то покурить, что, в целом, не отменяло первые два пункта, так что совсем скоро кабинет остался полупустым.</p>
+
+            <div class="chat-container">
+                <div class="chat-message">
+                    <div class="chat-sender">Мама</div>
+                    <div class="chat-bubble">Сегодня останусь в офисе. В холодильнике суп. Буду только утром.</div>
+                </div>
+                <div class="chat-message sent">
+                    <div class="chat-sender">Kazuha_Kaedehara</div>
+                    <div class="chat-bubble">Понял, не забудь выпить таблетки</div>
+                </div>
+                <div class="chat-reaction">собеседник лайкнул(-а) ваше сообщение</div>
+            </div>
+
+            <p>Кадзуха отложил телефон и снова уставился в окно. Отсыревшие листья все еще валялись на асфальте после вчерашнего дождя, а теперь снова началась морось. Казалось, конца и края этой осенней хандре не было.</p>
+
+            <p class="dialogue">Курить будешь? Дорого не возьму.</p>
+
+            <p>Кадзуха обернулся и слегка ошарашено уставился на собеседника. Перед ним во всей своей красе расселся Скара. На задних партах скучающим взглядом за этим наблюдала Лайла с Розалиной.</p>
+
+            <p>Они не были подругами, но, видимо, обе знали Скару.</p>
+
+            <p class="dialogue">Бросил,— достаточно однозначно ответил Кадзуха.</p>
+
+            <p>Ему показалось, что в глазах Скары мелькнуло недовольство, но тот быстро вернул свой нейтрально-пассивно-агрессивный взгляд. Точно псих. Весь такой спокойный внешне, но каждое движение выверено и четко настолько, что не по себе становится.</p>
+
+            <p>Скара был из тех людей, которые одним своим взглядом могли заставить кого-то почувствовать себя плохо.</p>
+
+            <p class="dialogue">Ладно.</p>
+
+            <p>Кадзуха проводил удаляющегося в коридор Скару взглядом и, наконец, выдохнул. Он не до конца понял: хотел ли новенький подсесть и поболтать или реально предлагал купить покурить?</p>
+
+            <p>Если второе, то у Кадзухи появилось еще больше вопросов. Вот кто-кто, а Скара явно не выглядел как кто-то, кому нужны были деньги. Уж тем более таким путем.</p>
+
+            <p>До конца сокращенного учебного дня ничего интересного больше не происходило. И без того скучающий Кадзуха расклеился окончательно и домой шел медленным прогулочным шагом, наслаждаясь музыкой в наушниках. Повезло, что ему хватило мозгов взять с собой толстовку, так что теперь не приходилось мочить голову под дождем.</p>
+
+            <p>Краем глаза Кадзуха заметил, как мимо него пролетел Скара и уселся в черную машину с тонированными стеклами. Кадзуху это не удивило. Он-то грешным делом подумал, что кто-то, наконец, тоже ходил домой в ту же сторону. Но предположение оказалось пустым, что Кадзуху несильно и расстроило.</p>
+
+            <p>Домой парень вернулся вымокшим до самых костей. Всю одежду пришлось бросать сушиться, а брюки стирать от грязи. Лишнюю мороку Кадзуха очень не любил, зато любил чистоту, так что, лишь разобравшись со всеми домашними делами, улегся отдыхать.</p>
+
+            <p>К супу даже не притронулись. План у него был другой. Проспав до позднего вечера и проснувшись, когда за окном было уже очень темно, Кадзуха уселся за ноутбук. Почти всю ночь он провел за просмотром видео-уроков по игре на гитаре и попытками повторить увиденное на самодельном муляже из бумаги и картона.</p>
+
+            <p>Первую стипендию Кадзуха обещал себе потратить на покупку гитары.</p>
+        </article>
+
+        <div class="author-note" style="margin-top: 60px;">
+            <div class="author-note-title">Примечания автора</div>
+            <div class="author-note-content">
+                Вот такое вот начало. Очень стараюсь над тем, чтобы писать вроде и школьную ау, а вроде и сохранить около каноничные характеры персонажей 🙏 во второй главе уже более подробно напишу все, что думаю по этому всему поводу)<br><br>
+                Буду очень-очень рада вашим отзывам! Мне будет очень приятно почитать, что вы думаете по поводу идеи и самих персонажей) дальше будет еще интереснее 🫶🏻<br><br>
+                Всех люблю и всем хорошего настроения, берегите себя 💞
+            </div>
+        </div>
+
+        <nav class="chapter-nav">
+            <a href="#" class="disabled">← Предыдущая</a>
+            <a href="../treble-clef.html">К оглавлению</a>
+            <button class="mark-read-btn" id="markRead" onclick="toggleRead()">Прочитано</button>
+            <a href="chapter-2.html">Следующая →</a>
+        </nav>
+    </div>
+
+    <script>
+        // Фон
+        const canvas = document.getElementById('bg-particles');
+        const ctx = canvas.getContext('2d');
+        let particles = [];
+        let mouseX = 0, mouseY = 0;
+
+        function resize() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
+        resize();
+        window.addEventListener('resize', resize);
+
+        for (let i = 0; i < 40; i++) {
+            particles.push({
+                x: Math.random() * canvas.width,
+                y: Math.random() * canvas.height,
+                size: Math.random() * 1.5 + 0.5,
+                speedX: (Math.random() - 0.5) * 0.15,
+                speedY: (Math.random() - 0.5) * 0.15,
+                opacity: Math.random() * 0.1 + 0.02,
+                hue: Math.random() * 30 - 15
+            });
+        }
+
+        document.addEventListener('mousemove', (e) => { mouseX = e.clientX; mouseY = e.clientY; });
+
+        function animate() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            particles.forEach(p => {
+                const dx = mouseX - p.x, dy = mouseY - p.y;
+                const dist = Math.sqrt(dx * dx + dy * dy);
+                if (dist < 100) { p.x -= dx * 0.008; p.y -= dy * 0.008; }
+                p.x += p.speedX; p.y += p.speedY;
+                if (p.x < 0 || p.x > canvas.width) p.speedX *= -1;
+                if (p.y < 0 || p.y > canvas.height) p.speedY *= -1;
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+                ctx.fillStyle = `hsla(${340 + p.hue}, 50%, 70%, ${p.opacity})`;
+                ctx.fill();
+            });
+            requestAnimationFrame(animate);
+        }
+        animate();
+
+        // Курсор
+        const isMobile = window.matchMedia('(hover: none)').matches;
+        if (!isMobile) {
+            const cursor = document.querySelector('.cursor');
+            const follower = document.querySelector('.cursor-follower');
+            let cX = 0, cY = 0, fX = 0, fY = 0;
+            document.addEventListener('mousemove', (e) => { cX = e.clientX; cY = e.clientY; });
+            function animateCursor() {
+                cursor.style.transform = `translate(${cX - 4}px, ${cY - 4}px)`;
+                fX += (cX - fX) * 0.15; fY += (cY - fY) * 0.15;
+                follower.style.transform = `translate(${fX - 20}px, ${fY - 20}px)`;
+                requestAnimationFrame(animateCursor);
+            }
+            animateCursor();
+            document.querySelectorAll('a, button, .track-item, .progress-bar, .music-track-btn').forEach(el => {
+                el.addEventListener('mouseenter', () => follower.classList.add('hover'));
+                el.addEventListener('mouseleave', () => follower.classList.remove('hover'));
+            });
+        }
+
+        // === ПЛЕЕР ===
+        const tracks = [
+            { name: 'лазить по стенам', artist: 'Zhanulka', src: '../../audio/lazit-po-stenam.mp3' },
+            { name: 'Мою первую любовь звали ненависть', artist: 'Алена Швец', src: '../../audio/moyu-pervuyu-lyubov.mp3' }
+        ];
+
+        let currentTrack = 0;
+        let isPlaying = false;
+        const audio = new Audio();
+        audio.volume = 0.3;
+
+        const musicFloat = document.getElementById('musicFloat');
+        const musicToggle = document.getElementById('musicToggle');
+        const musicPanel = document.getElementById('musicPanel');
+        const playBtn = document.getElementById('playBtn');
+        const trackName = document.getElementById('trackName');
+        const trackArtist = document.getElementById('trackArtist');
+        const progressFill = document.getElementById('progressFill');
+        const currentTimeEl = document.getElementById('currentTime');
+        const durationEl = document.getElementById('duration');
+        const volumeValue = document.getElementById('volumeValue');
+
+        function playTrackAndShowPlayer(index) {
+            musicFloat.classList.add('visible');
+            musicPanel.classList.add('visible');
+            musicToggle.classList.add('active');
+            playTrack(index);
+        }
+
+        function togglePlayer() {
+            musicPanel.classList.toggle('visible');
+            musicToggle.classList.toggle('active');
+        }
+
+        function playTrack(index) {
+            currentTrack = index;
+            audio.src = tracks[index].src;
+            audio.play().catch(() => {});
+            isPlaying = true;
+            updateUI();
+        }
+
+        function togglePlay() {
+            if (isPlaying) {
+                audio.pause();
+            } else {
+                if (!audio.src) audio.src = tracks[currentTrack].src;
+                audio.play().catch(() => {});
+            }
+            isPlaying = !isPlaying;
+            updateUI();
+        }
+
+        function nextTrack() {
+            currentTrack = (currentTrack + 1) % tracks.length;
+            playTrack(currentTrack);
+        }
+
+        function prevTrack() {
+            currentTrack = (currentTrack - 1 + tracks.length) % tracks.length;
+            playTrack(currentTrack);
+        }
+
+        function setVolume(val) {
+            audio.volume = val / 100;
+            volumeValue.textContent = val + '%';
+        }
+
+        function seekTrack(e) {
+            const rect = e.target.getBoundingClientRect();
+            const percent = (e.clientX - rect.left) / rect.width;
+            audio.currentTime = percent * audio.duration;
+        }
+
+        function formatTime(sec) {
+            if (isNaN(sec)) return '0:00';
+            const m = Math.floor(sec / 60);
+            const s = Math.floor(sec % 60);
+            return m + ':' + (s < 10 ? '0' : '') + s;
+        }
+
+        function updateUI() {
+            trackName.textContent = tracks[currentTrack].name;
+            trackArtist.textContent = tracks[currentTrack].artist;
+            playBtn.textContent = isPlaying ? '⏸' : '▶';
+            musicToggle.classList.toggle('playing', isPlaying);
+            document.querySelectorAll('.track-item').forEach((el, i) => {
+                el.classList.toggle('active', i === currentTrack);
+            });
+        }
+
+        audio.addEventListener('timeupdate', () => {
+            const percent = (audio.currentTime / audio.duration) * 100;
+            progressFill.style.width = percent + '%';
+            currentTimeEl.textContent = formatTime(audio.currentTime);
+        });
+
+        audio.addEventListener('loadedmetadata', () => {
+            durationEl.textContent = formatTime(audio.duration);
+        });
+
+        audio.addEventListener('ended', nextTrack);
+
+        // ПРОЧИТАНО
+        const FIC_ID = 'treble-clef';
+        const CHAPTER = '1';
+
+        function getRead() {
+            const data = JSON.parse(localStorage.getItem('chaptersRead') || '{}');
+            return data[FIC_ID] || [];
+        }
+
+        function saveRead(arr) {
+            const data = JSON.parse(localStorage.getItem('chaptersRead') || '{}');
+            data[FIC_ID] = arr;
+            localStorage.setItem('chaptersRead', JSON.stringify(data));
+        }
+
+        function toggleRead() {
+            let read = getRead();
+            if (read.includes(CHAPTER)) {
+                read = read.filter(c => c !== CHAPTER);
+            } else {
+                read.push(CHAPTER);
+            }
+            saveRead(read);
+            updateReadBtn();
+        }
+
+        function updateReadBtn() {
+            const btn = document.getElementById('markRead');
+            const read = getRead();
+            if (read.includes(CHAPTER)) {
+                btn.classList.add('read');
+                btn.textContent = '✓ Прочитано';
+            } else {
+                btn.classList.remove('read');
+                btn.textContent = 'Прочитано';
+            }
+        }
+
+        updateReadBtn();
+
+        // === КАСТОМНЫЙ СКРОЛЛБАР ===
+        const scrollThumb = document.getElementById('scrollThumb');
+
+        function updateScrollbar() {
+            const scrollHeight = document.documentElement.scrollHeight - window.innerHeight;
+            const scrollPercent = window.scrollY / scrollHeight;
+            const thumbHeight = Math.max((window.innerHeight / document.documentElement.scrollHeight) * window.innerHeight, 50);
+            const thumbTop = scrollPercent * (window.innerHeight - thumbHeight);
+
+            scrollThumb.style.height = thumbHeight + 'px';
+            scrollThumb.style.top = thumbTop + 'px';
+        }
+
+        window.addEventListener('scroll', updateScrollbar);
+        window.addEventListener('resize', updateScrollbar);
+        updateScrollbar();
+
+        document.querySelector('.custom-scrollbar').addEventListener('click', (e) => {
+            const clickPercent = e.clientY / window.innerHeight;
+            const scrollHeight = document.documentElement.scrollHeight - window.innerHeight;
+            window.scrollTo({ top: clickPercent * scrollHeight, behavior: 'smooth' });
+        });
+
+        // === КНОПКА НАВЕРХ ===
+        const scrollBtn = document.getElementById('scrollTop');
+
+        window.addEventListener('scroll', () => {
+            scrollBtn.classList.toggle('visible', window.scrollY > 500);
+        });
+
+        scrollBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
+    </script>
+</body>
+</html>
