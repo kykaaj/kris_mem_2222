@@ -52,6 +52,10 @@
             width: 60px; height: 60px;
             background: rgba(212, 160, 176, 0.1);
         }
+        .comma {
+    color: var(--pink);
+}
+
 
         body {
             font-family: 'Raleway', sans-serif;
@@ -1308,6 +1312,11 @@ scrollBtn.addEventListener('click', (e) => {
     e.preventDefault();
     window.scrollTo({ top: 0, behavior: 'smooth' });
 });
+        // Розовые запятые
+document.querySelectorAll('.chapter-content p, .chapter-content .dialogue').forEach(el => {
+    el.innerHTML = el.innerHTML.replace(/,/g, '<span class="comma">,</span>');
+});
+
 
     </script>
 </body>
