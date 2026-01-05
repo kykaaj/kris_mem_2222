@@ -137,7 +137,11 @@
             flex-direction: column;
             align-items: flex-start;
             gap: 15px;
+            opacity: 0;
+            visibility: hidden;            /* ← ДОБАВИТЬ */
+            transition: all 0.4s;  
         }
+        .music-float.visible { opacity: 1; visibility: visible; } 
 
         .music-toggle {
             width: 55px; height: 55px;
@@ -175,7 +179,6 @@
             -webkit-backdrop-filter: blur(15px);
             border: 1px solid rgba(212, 160, 176, 0.2);
             width: 320px;
-            display: none;
             opacity: 0;
             visibility: hidden;
             transform: translateY(20px);
@@ -1161,7 +1164,8 @@
         let isPlaying = false;
         const audio = new Audio();
         audio.volume = 0.3;
-
+        
+        const musicFloat = document.getElementById('musicFloat');
         const musicToggle = document.getElementById('musicToggle');
         const musicPanel = document.getElementById('musicPanel');
         const playBtn = document.getElementById('playBtn');
@@ -1173,6 +1177,7 @@
         const volumeValue = document.getElementById('volumeValue');
 
         function playTrackAndShowPlayer(index) {
+            musicFloat.classList.add('visible');
             musicPanel.classList.add('visible');
             musicToggle.classList.add('active');
             playTrack(index);
