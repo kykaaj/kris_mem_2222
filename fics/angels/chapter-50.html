@@ -137,6 +137,9 @@
             flex-direction: column;
             align-items: flex-start;
             gap: 15px;
+            opacity: 0; 
+            visibility: hidden;
+            transition: all 0.4s;
         }
 
         .music-toggle {
@@ -1113,6 +1116,7 @@
         const audio = new Audio();
         audio.volume = 0.3;
 
+        const musicFloat = document.getElementById('musicFloat');
         const musicToggle = document.getElementById('musicToggle');
         const musicPanel = document.getElementById('musicPanel');
         const playBtn = document.getElementById('playBtn');
@@ -1124,6 +1128,7 @@
         const volumeValue = document.getElementById('volumeValue');
 
         function playTrackAndShowPlayer(index) {
+            musicFloat.classList.add('visible');
             musicPanel.classList.add('visible');
             musicToggle.classList.add('active');
             playTrack(index);
