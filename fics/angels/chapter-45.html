@@ -1,0 +1,1352 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Глава 45 — Извини меня, милый</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=Raleway:wght@300;400;500&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+        :root {
+            --black: #0a0a0a;
+            --black-card: #131316;
+            --pink: #d4a0b0;
+            --pink-light: #e8bcc8;
+            --pink-dark: #b08090;
+            --cream: #f8f4f6;
+            --text: #d0ccd0;
+            --text-muted: #787478;
+        }
+
+        @media (hover: hover) and (pointer: fine) {
+            *, *::before, *::after { cursor: none !important; }
+            .cursor, .cursor-follower { display: block; }
+        }
+        @media (hover: none), (pointer: coarse) {
+            .cursor, .cursor-follower { display: none !important; }
+        }
+
+        .cursor {
+            position: fixed;
+            width: 8px; height: 8px;
+            background: var(--pink);
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 10001;
+            mix-blend-mode: difference;
+        }
+
+        .cursor-follower {
+            position: fixed;
+            width: 40px; height: 40px;
+            border: 1px solid var(--pink);
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 10000;
+            transition: width 0.3s, height 0.3s, background 0.3s;
+        }
+
+        .cursor-follower.hover {
+            width: 60px; height: 60px;
+            background: rgba(212, 160, 176, 0.1);
+        }
+
+        body {
+            font-family: 'Raleway', sans-serif;
+            background: var(--black);
+            color: var(--text);
+            min-height: 100vh;
+            line-height: 1.85;
+            font-size: 17px;
+            overflow-x: hidden;
+        }
+
+        #bg-particles {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background-image:
+                linear-gradient(rgba(212, 160, 176, 0.01) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(212, 160, 176, 0.01) 1px, transparent 1px);
+            background-size: 40px 40px;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .floating-shapes {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            pointer-events: none;
+            z-index: 1;
+            overflow: hidden;
+        }
+
+        .shape {
+            position: absolute;
+            border: 1px solid var(--pink);
+            opacity: 0.03;
+        }
+
+        .shape:nth-child(1) { width: 70px; height: 70px; top: 20%; right: 8%; border-radius: 50%; animation: float1 28s ease-in-out infinite; }
+        .shape:nth-child(2) { width: 50px; height: 50px; bottom: 25%; left: 5%; animation: float2 32s ease-in-out infinite; }
+        .shape:nth-child(3) { width: 40px; height: 40px; top: 60%; right: 3%; transform: rotate(45deg); animation: float3 25s ease-in-out infinite; }
+
+        @keyframes float1 { 0%, 100% { transform: translateY(0) scale(1); } 50% { transform: translateY(-20px) scale(1.05); } }
+        @keyframes float2 { 0%, 100% { transform: rotate(0deg); } 50% { transform: rotate(180deg); } }
+        @keyframes float3 { 0%, 100% { transform: rotate(45deg); } 50% { transform: rotate(135deg); } }
+
+        .scroll-top {
+            position: fixed;
+            bottom: 30px; right: 30px;
+            width: 50px; height: 50px;
+            background: rgba(19, 19, 22, 0.6);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(212, 160, 176, 0.3);
+            color: var(--pink);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.3rem;
+            text-decoration: none;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.4s;
+            z-index: 99;
+        }
+
+        .scroll-top.visible { opacity: 1; visibility: visible; }
+        .scroll-top:hover { background: var(--pink); color: var(--black); border-color: var(--pink); }
+
+        .music-float {
+            position: fixed;
+            bottom: 30px; left: 30px;
+            z-index: 100;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 15px;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.4s;
+        }
+
+        .music-float.visible { opacity: 1; visibility: visible; }
+
+        .music-toggle {
+            width: 55px; height: 55px;
+            background: rgba(19, 19, 22, 0.6);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(212, 160, 176, 0.3);
+            color: var(--pink);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.4rem;
+            cursor: pointer;
+            transition: all 0.4s;
+        }
+
+        .music-toggle:hover,
+        .music-toggle.active {
+            background: rgba(212, 160, 176, 0.2);
+            border-color: var(--pink);
+        }
+
+        .music-toggle.playing {
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(212, 160, 176, 0.1); }
+            50% { box-shadow: 0 0 0 6px rgba(212, 160, 176, 0); }
+        }
+
+        .music-panel {
+            background: rgba(19, 19, 22, 0.85);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            border: 1px solid rgba(212, 160, 176, 0.2);
+            width: 320px;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(20px);
+            transition: all 0.4s;
+            overflow: hidden;
+        }
+
+        .music-panel.visible {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+
+        .player-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 18px;
+            border-bottom: 1px solid rgba(212, 160, 176, 0.1);
+        }
+
+        .player-title {
+            font-size: 0.75rem;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: var(--pink);
+        }
+
+        .player-close {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            font-size: 1.3rem;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .player-close:hover { color: var(--pink); transform: rotate(90deg); }
+
+        .now-playing {
+            padding: 18px;
+            text-align: center;
+        }
+
+        .track-cover {
+            width: 70px; height: 70px;
+            margin: 0 auto 12px;
+            border: 1px solid var(--pink);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.8rem;
+            color: var(--pink);
+            background: var(--black);
+        }
+
+        .track-name {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1.2rem;
+            color: var(--cream);
+            margin-bottom: 4px;
+        }
+
+        .track-artist {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+
+        .progress-wrap {
+            padding: 0 18px;
+            margin-bottom: 12px;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.1);
+            cursor: pointer;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--pink), var(--pink-light));
+            width: 0%;
+            transition: width 0.1s;
+        }
+
+        .time-display {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            margin-top: 6px;
+        }
+
+        .player-controls {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 15px;
+            padding: 12px 18px;
+            border-top: 1px solid rgba(212, 160, 176, 0.1);
+        }
+
+        .control-btn {
+            width: 36px; height: 36px;
+            border: 1px solid var(--pink);
+            background: transparent;
+            color: var(--pink);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 0.9rem;
+        }
+
+        .control-btn:hover { background: var(--pink); color: var(--black); }
+        .control-btn.play { width: 44px; height: 44px; font-size: 1.1rem; }
+
+        .volume-wrap {
+            padding: 12px 18px;
+            border-top: 1px solid rgba(212, 160, 176, 0.1);
+        }
+
+        .volume-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .volume-label {
+            font-size: 0.65rem;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            color: var(--text-muted);
+        }
+
+        .volume-value {
+            font-size: 0.7rem;
+            color: var(--pink);
+        }
+
+        .volume-slider {
+            width: 100%;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.1);
+            appearance: none;
+            cursor: pointer;
+        }
+
+        .volume-slider::-webkit-slider-thumb {
+            appearance: none;
+            width: 12px; height: 12px;
+            background: var(--pink);
+            border-radius: 50%;
+            cursor: pointer;
+        }
+
+        .tracks-list {
+            max-height: 120px;
+            overflow-y: auto;
+            border-top: 1px solid rgba(212, 160, 176, 0.1);
+        }
+
+        .track-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 18px;
+            cursor: pointer;
+            transition: all 0.3s;
+            border-bottom: 1px solid rgba(212, 160, 176, 0.05);
+        }
+
+        .track-item:hover { background: rgba(212, 160, 176, 0.05); }
+        .track-item.active { background: rgba(212, 160, 176, 0.08); }
+        .track-item.active .track-item-name { color: var(--pink); }
+
+        .track-num {
+            width: 22px; height: 22px;
+            border: 1px solid var(--text-muted);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.65rem;
+            color: var(--text-muted);
+            flex-shrink: 0;
+        }
+
+        .track-item.active .track-num,
+        .track-item:hover .track-num {
+            border-color: var(--pink);
+            color: var(--pink);
+        }
+
+        .track-item-info { flex: 1; min-width: 0; }
+        .track-item-name { font-size: 0.85rem; color: var(--cream); }
+        .track-item-artist { font-size: 0.7rem; color: var(--text-muted); }
+
+        .container {
+            position: relative;
+            z-index: 2;
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 50px 50px 120px;
+        }
+
+        .nav-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 50px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid rgba(212, 160, 176, 0.08);
+            flex-wrap: wrap;
+            gap: 15px;
+            opacity: 0;
+            animation: fadeIn 0.6s ease forwards;
+        }
+
+        @keyframes fadeIn {
+            to { opacity: 1; }
+        }
+
+        .nav-top a {
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 0.85rem;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            transition: all 0.3s;
+        }
+
+        .nav-top a:hover { color: var(--pink); }
+        .nav-top a.disabled { opacity: 0.3; pointer-events: none; }
+        .nav-center { color: var(--pink); font-size: 0.85rem; }
+
+        .chapter-header {
+            text-align: center;
+            margin-bottom: 50px;
+            opacity: 0;
+            animation: fadeUp 0.8s ease 0.2s forwards;
+        }
+
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .chapter-label {
+            font-size: 0.8rem;
+            letter-spacing: 4px;
+            text-transform: uppercase;
+            color: var(--pink);
+            margin-bottom: 12px;
+        }
+
+        .chapter-number {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 5rem;
+            font-weight: 300;
+            color: var(--cream);
+            line-height: 1;
+            margin-bottom: 15px;
+        }
+
+        .chapter-title {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 2.2rem;
+            font-weight: 400;
+            color: var(--cream);
+            margin-bottom: 12px;
+        }
+
+        .chapter-date {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        .chapter-divider {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 18px;
+            margin-top: 30px;
+        }
+
+        .chapter-divider span {
+            width: 60px;
+            height: 1px;
+            background: var(--pink);
+        }
+
+        .divider-diamond {
+            width: 10px; height: 10px;
+            border: 1px solid var(--pink);
+            transform: rotate(45deg);
+            animation: diamondSpin 8s linear infinite;
+        }
+
+        @keyframes diamondSpin {
+            from { transform: rotate(45deg); }
+            to { transform: rotate(405deg); }
+        }
+
+        .author-note {
+            background: var(--black-card);
+            border: 1px solid rgba(212, 160, 176, 0.08);
+            padding: 25px 30px;
+            margin-bottom: 45px;
+            opacity: 0;
+            animation: fadeUp 0.8s ease 0.4s forwards;
+        }
+
+        .author-note-title {
+            font-size: 0.8rem;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: var(--pink);
+            margin-bottom: 15px;
+        }
+
+        .author-note-content {
+            font-size: 0.95rem;
+            color: var(--text-muted);
+            line-height: 1.8;
+        }
+
+        .music-section {
+            background: var(--black-card);
+            border: 1px solid rgba(212, 160, 176, 0.08);
+            padding: 20px 25px;
+            margin-bottom: 45px;
+            opacity: 0;
+            animation: fadeUp 0.8s ease 0.5s forwards;
+        }
+
+        .music-section-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .music-label {
+            font-size: 0.8rem;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            color: var(--pink);
+        }
+
+        .music-hint {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+
+        .music-tracks {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .music-track-btn {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 16px;
+            background: transparent;
+            border: 1px solid rgba(212, 160, 176, 0.15);
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .music-track-btn:hover {
+            border-color: var(--pink);
+            color: var(--pink);
+            transform: translateY(-2px);
+        }
+
+        .chapter-content {
+            font-size: 1.15rem;
+            line-height: 1.9;
+            color: var(--text);
+            text-align: left;
+            opacity: 0;
+            animation: fadeUp 0.8s ease 0.6s forwards;
+        }
+
+        .chapter-content p {
+            margin-bottom: 1.5em;
+        }
+
+        .chapter-content p:first-of-type::first-letter {
+            float: left;
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 4.5rem;
+            line-height: 0.8;
+            padding-right: 15px;
+            padding-top: 8px;
+            color: var(--pink);
+            font-weight: 500;
+        }
+
+        .thought {
+            padding: 18px 25px;
+            margin: 1.8em 0;
+            border-left: 3px solid var(--pink);
+            background: rgba(212, 160, 176, 0.02);
+            font-style: italic;
+            color: var(--text-muted);
+        }
+
+        .dialogue {
+            color: var(--cream);
+            position: relative;
+            padding-left: 1.5em;
+        }
+
+        .dialogue::before {
+            content: '—';
+            position: absolute;
+            left: 0;
+            color: var(--pink);
+            font-weight: 500;
+        }
+
+        .scene-break {
+            text-align: center;
+            margin: 2.5em 0;
+            color: var(--pink);
+            font-size: 1.2rem;
+            letter-spacing: 0.3em;
+            opacity: 0.6;
+        }
+
+        .chapter-nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 60px;
+            padding-top: 35px;
+            border-top: 1px solid rgba(212, 160, 176, 0.08);
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .chapter-nav a,
+        .chapter-nav button {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 0.85rem;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            padding: 15px 25px;
+            border: 1px solid rgba(212, 160, 176, 0.15);
+            background: transparent;
+            cursor: pointer;
+            transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .chapter-nav a::before,
+        .chapter-nav button::before {
+            content: '';
+            position: absolute;
+            top: 0; left: -100%;
+            width: 100%; height: 100%;
+            background: var(--pink);
+            transition: left 0.3s;
+            z-index: -1;
+        }
+
+        .chapter-nav a:hover,
+        .chapter-nav button:hover {
+            color: var(--black);
+            border-color: var(--pink);
+        }
+
+        .chapter-nav a:hover::before,
+        .chapter-nav button:hover::before { left: 0; }
+
+        .chapter-nav a.disabled { opacity: 0.3; pointer-events: none; }
+
+        .mark-read-btn.read {
+            background: var(--pink);
+            color: var(--black);
+            border-color: var(--pink);
+        }
+
+        .comma {
+            color: var(--pink);
+        }
+
+        .memory-block {
+            background: rgba(212, 160, 176, 0.03);
+            border-left: 3px solid var(--pink);
+            padding: 20px 25px;
+            margin: 2em 0;
+            font-style: italic;
+            color: var(--text-muted);
+        }
+
+        .memory-block p {
+            margin-bottom: 1em;
+        }
+
+        .memory-block p:last-child {
+            margin-bottom: 0;
+        }
+
+        @media (max-width: 768px) {
+            body { font-size: 15px; }
+            .container { padding: 30px 20px 100px; }
+            .chapter-content { font-size: 1rem; line-height: 1.8; }
+            .chapter-number { font-size: 3.5rem; }
+            .chapter-title { font-size: 1.7rem; }
+            .chapter-nav { flex-direction: column; }
+            .chapter-nav a, .chapter-nav button { width: 100%; justify-content: center; }
+            .thought { padding: 15px 18px; }
+            .author-note { padding: 18px 22px; }
+            .floating-shapes { display: none; }
+
+            .scroll-top {
+                bottom: 20px;
+                right: 20px;
+                width: 44px;
+                height: 44px;
+                opacity: 0.6;
+            }
+            .scroll-top.visible { opacity: 0.6; }
+            .scroll-top:active { opacity: 1; }
+
+            .music-float { left: 20px; bottom: 20px; }
+
+            .music-toggle {
+                width: 44px;
+                height: 44px;
+                font-size: 1.2rem;
+                opacity: 0.6;
+            }
+            .music-toggle.active,
+            .music-toggle:active { opacity: 1; }
+
+            .music-panel {
+                width: calc(100vw - 40px);
+                max-width: 280px;
+            }
+
+            .now-playing { padding: 12px; }
+            .track-cover { width: 50px; height: 50px; font-size: 1.4rem; margin-bottom: 8px; }
+            .track-name { font-size: 1rem; }
+            .track-artist { font-size: 0.75rem; }
+
+            .progress-wrap { padding: 0 12px; margin-bottom: 10px; }
+            .time-display { font-size: 0.65rem; }
+
+            .player-controls { padding: 10px 12px; gap: 12px; }
+            .control-btn { width: 32px; height: 32px; font-size: 0.8rem; }
+            .control-btn.play { width: 38px; height: 38px; font-size: 1rem; }
+
+            .volume-wrap { padding: 10px 12px; }
+            .volume-label { font-size: 0.6rem; }
+            .volume-value { font-size: 0.65rem; }
+
+            .tracks-list { max-height: 100px; }
+            .track-item { padding: 8px 12px; gap: 8px; }
+            .track-num { width: 18px; height: 18px; font-size: 0.6rem; }
+            .track-item-name { font-size: 0.8rem; }
+            .track-item-artist { font-size: 0.65rem; }
+
+            .player-header { padding: 12px 14px; }
+            .player-title { font-size: 0.7rem; }
+            .player-close { font-size: 1.1rem; }
+
+            .memory-block { padding: 15px 18px; }
+        }
+
+        html {
+            scroll-behavior: smooth;
+            scrollbar-width: none;
+        }
+
+        body::-webkit-scrollbar {
+            display: none;
+        }
+
+        body {
+            -ms-overflow-style: none;
+        }
+
+        .custom-scrollbar {
+            position: fixed;
+            top: 0;
+            right: 0;
+            width: 6px;
+            height: 100vh;
+            background: #0a0a0a;
+            z-index: 9999;
+        }
+
+        .scrollbar-thumb {
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 6px;
+            background: #b08090;
+            transition: background 0.3s;
+        }
+
+        .scrollbar-thumb:hover {
+            background: #d4a0b0;
+        }
+    </style>
+</head>
+<body>
+    <div class="custom-scrollbar">
+        <div class="scrollbar-thumb" id="scrollThumb"></div>
+    </div>
+    <div class="cursor"></div>
+    <div class="cursor-follower"></div>
+    <canvas id="bg-particles"></canvas>
+
+    <div class="floating-shapes">
+        <div class="shape"></div>
+        <div class="shape"></div>
+        <div class="shape"></div>
+    </div>
+
+    <a href="#top" class="scroll-top" id="scrollTop">↑</a>
+
+    <!-- ПЛЕЕР -->
+    <div class="music-float" id="musicFloat">
+        <div class="music-panel" id="musicPanel">
+            <div class="player-header">
+                <span class="player-title">♪ Плейлист</span>
+                <button class="player-close" onclick="togglePlayer()">✕</button>
+            </div>
+            <div class="now-playing">
+                <div class="track-cover" id="trackCover">♪</div>
+                <div class="track-name" id="trackName">Выбери трек</div>
+                <div class="track-artist" id="trackArtist">—</div>
+            </div>
+            <div class="progress-wrap">
+                <div class="progress-bar" id="progressBar" onclick="seekTrack(event)">
+                    <div class="progress-fill" id="progressFill"></div>
+                </div>
+                <div class="time-display">
+                    <span id="currentTime">0:00</span>
+                    <span id="duration">0:00</span>
+                </div>
+            </div>
+            <div class="player-controls">
+                <button class="control-btn" onclick="prevTrack()">⏮</button>
+                <button class="control-btn play" id="playBtn" onclick="togglePlay()">▶</button>
+                <button class="control-btn" onclick="nextTrack()">⏭</button>
+            </div>
+            <div class="volume-wrap">
+                <div class="volume-header">
+                    <span class="volume-label">◈ Громкость</span>
+                    <span class="volume-value" id="volumeValue">30%</span>
+                </div>
+                <input type="range" class="volume-slider" id="volumeSlider" min="0" max="100" value="30" oninput="setVolume(this.value)">
+            </div>
+            <div class="tracks-list">
+                <div class="track-item" data-index="0" onclick="playTrack(0)">
+                    <div class="track-num">1</div>
+                    <div class="track-item-info">
+                        <div class="track-item-name">Вторая весна</div>
+                        <div class="track-item-artist">Женя Трофимов, NANSI</div>
+                    </div>
+                </div>
+                <div class="track-item" data-index="1" onclick="playTrack(1)">
+                    <div class="track-num">2</div>
+                    <div class="track-item-info">
+                        <div class="track-item-name">Shape of My Heart</div>
+                        <div class="track-item-artist">Sting</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <button class="music-toggle" id="musicToggle" onclick="togglePlayer()"><span>♪</span></button>
+    </div>
+
+    <div class="container" id="top">
+        <nav class="nav-top">
+            <a href="chapter-44.html">← Глава 44</a>
+            <span class="nav-center">Глава 45 из 54</span>
+            <a href="chapter-46.html">Глава 46 →</a>
+        </nav>
+
+        <header class="chapter-header">
+            <div class="chapter-label">Глава</div>
+            <div class="chapter-number">XLV</div>
+            <h1 class="chapter-title">Извини меня, милый</h1>
+            <div class="chapter-date">15 июня 2025 г., 23:06</div>
+            <div class="chapter-divider">
+                <span></span>
+                <div class="divider-diamond"></div>
+                <span></span>
+            </div>
+        </header>
+
+        <div class="author-note">
+            <div class="author-note-title">Примечания автора</div>
+            <div class="author-note-content">
+                Мои прекрасные, я снова здесь с новой главой 🥳 после появления Наны стало настолько проще писать… Как глоток свежего воздуха. Надеюсь, что вам эта малышка тоже полюбилась 🥹<br><br>
+                Всем приятного прочтения 💞
+            </div>
+        </div>
+
+        <div class="music-section">
+            <div class="music-section-header">
+                <span class="music-label">♪ Песенки к главе</span>
+                <span class="music-hint">Нажми, чтобы включить</span>
+            </div>
+            <div class="music-tracks">
+                <button class="music-track-btn" onclick="playTrackAndShowPlayer(0)">
+                    <span>▶</span> Женя Трофимов, NANSI — Вторая весна
+                </button>
+                <button class="music-track-btn" onclick="playTrackAndShowPlayer(1)">
+                    <span>▶</span> Sting — Shape of My Heart
+                </button>
+            </div>
+        </div>
+
+        <article class="chapter-content">
+            <p>Вечер в загородном доме выдался шумным и насыщенным на самые разные события. Не дождавшись ни лета, ни конца сессии, ни сдачи курсовых, Тарталья принял решение, что отдыхать нужно, пока есть настроение и, собрав всех друзей у себя, объявил начало сезона дач и шашлыков.</p>
+
+            <p>Скарамучча не стал спорить и поехал вместе со всеми. Расслабиться хотелось, хоть и делать это было все еще сложновато. Присутствие Наны заметно скрашивало серые будни, а проводить праздничные выходные дни в тусклом общежитии совсем не хотелось. Нана, разумеется, поехала вместе со всеми.</p>
+
+            <p>Все находящиеся в одной со Скарамуччей машине были готовы к тому, что котенок будет беспокойным и немало накричится за поездку, но Нана, словно маленькая леди, уселась на руки своего хозяина и всю поездку очень увлеченно рассматривала пейзажи за окном. Никто равнодушным к этой картине не остался, так что уже совсем скоро Нану облюбовали все, кто согласился на поездку.</p>
+
+            <p>А людей собралось немало. Скарамучча насчитал пятерых, помимо его самого. Спокойно и даже приятно он пообщался с Нахидой, что развеяло ее страхи за друга. Люмин была заинтересована в Нане больше, чем в самом Скарамучче. Роза помогала Тарталье, а Хэйдзо просто отдыхал со всеми.</p>
+
+            <p>Так или иначе, к вечеру все были при деле. Люмин с Нахидой мило болтали о чем-то в гостиной, украшая и сервируя стол. Остальные остались на улице жарить шашлыки. И только Скарамучча шуршал на кухне, нарезал овощи на салаты и хлеб на бутерброды. С динамика телефона играла спокойная музыка, а под руками и ногами крутилась очень любопытная Нана.</p>
+
+            <p>Совершенно не стесняясь, она залазила на штанину Скарамуччи, запрыгивала на его руку и своими огромными голубыми глазами следила за тем, чтобы все было нарезано правильно. Не меньше Нане нравилось требовательно мяукать, когда ее слишком долго не гладили, и, конечно же, ни разу отказа она не получила.</p>
+
+            <p>Скарамучча уже не замечал, как часто стал улыбаться. Каждое урчащее мяуканье, каждое движение этого крохотного белого хвостика, каждый пронзительный взгляд таких наивных кошачьих глазок — все это было его личным способом терапии. Нана временами напоминала… Кадзуху. Такая же требовательная в плане прикосновений, такая же прилипчивая и верная.</p>
+
+            <p>Когда малышке надоело прыгать и скакать вокруг Скарамуччи, она, не без его помощи, залезла по мягкому кардигану к нагрудному карману и уселась там, наблюдая за всем происходящим свысока. То и дело было видно, как пушистые ушки то навострятся, то расслабятся, как выглянет из-под ткани белая лапка с розовыми подушечками и начнет играться с нитками. Скарамучча вздыхал и гладил Нану столько, сколько она просила и хотела. Да и сам Скарамучча хотел…</p>
+
+            <p class="dialogue">Салаты можно уже заправлять потихоньку. Шашлык скоро будет готов.</p>
+
+            <p>Скарамучча обернулся, встречаясь взглядом с Хэйдзо, который разглядывал кухню.</p>
+
+            <p class="dialogue">Хорошо, — кивнув, вернулся к нарезке салатов, игнорируя чужое присутствие.</p>
+
+            <p>И нет, Хэйдзо не вызывал раздражения или что-то такое. Просто они со Скарамуччей не были друзьями. То, что Кадзуха общался и даже дружил с ним никоим образом не влияло на нынешнюю ситуацию.</p>
+
+            <p>К тому же, Скарамучча все еще не мог понять, как можно было так просто почти полностью позабыть о больном друге, пусть даже и после вступления в отношения. Но Люмин была слишком хорошей подругой, чтобы тайно хранить обиду на ее парня, так что отношения с ним хотелось сохранить нейтральные.</p>
+
+            <p class="dialogue">Милый котенок. В общагу разве можно? — Хэйдзо никудышно завязал разговор, подходя к Скарамучче и наблюдая за тем, как тот искусно управлялся с ножом.</p>
+
+            <p>Нана повернула белую мордочку к новому гостю и фыркнула, отчего розовый носик забавно дернулся.</p>
+
+            <p class="dialogue">Нет, — Скарамучча отвечал односложно, потому что этот вопрос уже порядком надоел.</p>
+
+            <p>Неужели нельзя было найти другой способ начать диалог?</p>
+
+            <p>Хэйдзо вздохнул, улыбаясь Нане так, будто бы она могла понять его улыбку, и, кажется, действительно поняла… расслабилась и, потеревшись задней частью головы о кардиган Скарамуччи, принялась дальше наблюдать за его готовкой.</p>
+
+            <p>Нана была чрезвычайно умным и сообразительным котенком, что сразу бросалось в глаза.</p>
+
+            <p class="dialogue">Ясно… отдавать не будешь, я так понимаю? — Хэйдзо уточнил, выключая рекламу на телефоне Скарамуччи, которая началась после того, как песня доиграла.</p>
+
+            <p>В комнате будто бы стало не так уютно, хоть следующая песня и была очень расслабляющей. Скарамучча положил нож на стол и уставился на Хэйдзо, пытаясь понять, что именно он хотел получить от этого разговора.</p>
+
+            <p>Нана будто бы почувствовала настроение хозяина и жалобно мяукнула, протягивая пушистую лапку вперед, разрешая Хэйдзо себя погладить. Он так и сделал и все-таки решил вернуться к Скарамучче.</p>
+
+            <p class="dialogue">Ты не подумай, просто интересно, как ты, — сказал он честно, улыбаясь на теплое урчание Наны и осторожно гладя мягкую шерстку между ушками.</p>
+
+            <p class="dialogue">Неожиданно, но спасибо. Я в норме, — соврал Скарамучча, потому что делиться всеми своими переживаниями с почти незнакомцем ему не хотелось.</p>
+
+            <p>У них с Хэйдзо не было ни дружбы, ни даже общения, хотя и причина его волнения была понятна. Так или иначе, Кадзуха их хоть чуть-чуть, но связывал. Они оба были близки к нему, хотя Хэйдзо не выглядел, как глубоко опечаленный человек, потерявший хорошего друга.</p>
+
+            <p class="dialogue">Рад слышать. Люмин даже предлагала приютить Нану, когда ты ей написал, но, видимо, у нее уже есть дом.</p>
+
+            <p>Скарамучча кивнул, обращая внимание на то, как на слове «дом» Нана довольно замурчала и спряталась в кармашке полностью, тыкаясь мордочкой в грудь хозяина и ластясь. Умилительная картина, которая растрогала бы любого.</p>
+
+            <p class="dialogue">Да. Все равно скоро работу буду искать. Сниму квартиру, будем жить вдвоем.</p>
+
+            <p>Хэйдзо такой ответ устроил, хоть и получалось очень печально. Наверняка, Скарамучча даже не рассматривал перспективу начала новых отношений в ближайшем будущем.</p>
+
+            <p class="dialogue">Про тебя спрашивать не буду. Мне Люмин и так все рассказывает, — вздохнув, парень вернулся к салатам, дорезая последние помидоры и скидывая их в большую тару.</p>
+
+            <p class="dialogue">И что она про меня рассказывает? — поинтересовался Хэйдзо, добавляя на всякий случай, — может тебе помочь?</p>
+
+            <p>Скарамучча за пару секунд сообразил и указал на холодильник.</p>
+
+            <p class="dialogue">Достань майонез и масло подсолнечное где-то в нижних полках. Заправить надо, — ответил, чуть хмурясь и сосредотачиваясь на поставленной задаче больше, чем на первом вопросе. Но и на него все-таки дал ответ спустя пару мгновений, — рассказывает, что у вас все хорошо и она ждет предложения.</p>
+
+            <p>Скрывать этого Скарамучча не стал, потому что Люмин не раз говорила, что всячески намекала Хэйдзо на свадьбу и дальнейшую жизнь вместе.</p>
+
+            <p class="dialogue">Да-да, — Хэйдзо усмехнулся, раскладывая все заправки на столе и помогая Скарамучче закончить с салатами, — пока как будто время для этого не складывается… столько всего наваливается со всех сторон. Подожду, пока поуляжется, и тогда уже буду думать, как ее удивить.</p>
+
+            <p>Такой ответ Скарамуччу более, чем устраивал. Он очень хотел счастья для Люмин, потому что она явно была той, кто этого заслуживал. Очень добрая и яркая девушка, которую обидеть Скарамучча никому бы не позволил.</p>
+
+            <p class="dialogue">Да мне то что. Решишь сам, не маленький вроде, — сказал он чуть отрешенно, но без всякого раздражения в голосе, — Бэй Доу про тебя вспоминала.</p>
+
+            <p>Хэйдзо аж опешил от такого заявления. Застыл с майонезом в руках, на что получил удар по рукам за то, что чуть не переборщил с заправкой, и ответное тихое мурчание Наны, которая, как маленькая шпионка, за всем наблюдала.</p>
+
+            <p class="dialogue">Ого. И в каком контексте?.. — уточнил, немного собравшись и упираясь руками в столешницу.</p>
+
+            <p>Вздохнув и взяв большую ложку для размешивания, Скарамучча объяснил.</p>
+
+            <p class="dialogue">Спрашивала про тебя. Я сказал, что у тебя все отлично. Ей тоже очень… — сглотнув ком в горле и мысленно досчитав до десяти, продолжил, — тяжело. А тебя она помнит же… для нее ты тоже очень хороший человек.</p>
+
+            <p>В любой другой ситуации Хэйдзо уточнил бы поподробнее, как и при каких обстоятельствах о нем расспрашивали, и почему вообще это делали, но точно не сейчас. Не у Скарамуччи. Невооруженным глазом видно было, как сложно ему давалось говорить о Кадзухе, даже спустя месяцы, особенно с человеком, который никогда не был близок.</p>
+
+            <p class="dialogue">Надо к ней зайти как-нибудь…</p>
+
+            <p class="dialogue">Надо. Можно вдвоем даже, раз уж такая ситуация, — Скарамучча вздохнул и кинул ложку в раковину.</p>
+
+            <p>Нана уложила обе лапки на край кармана, с интересом разглядывая готовую еду глазками-пуговками.</p>
+
+            <p class="dialogue">Надо нести на стол. Поможешь, — скомандовал парень, забирая две большие тарелки и взглядом показывая Хэйдзо на то, что должен был отнести он.</p>
+
+            <p>Стол получился богатым. Ни шашлыки, ни салаты полностью ни в кого не влезли. Уже спустя полчаса все сидели довольные и сытые по горло. Но только едой, еще не разговорами.</p>
+
+            <p>Скарамучча участвовал в них постольку поскольку. В основном отсиживался на диване, играясь с Наной и изредка вслушиваясь в голоса других. Иногда темы были интересными, иногда не очень, вмешивался в эту болтовню Скарамучча все равно очень редко.</p>
+
+            <p>Разве что, когда Нахида подсела к нему и начала очень осторожно прощупывать почву. Но спокойный, даже умиротворенный взгляд Скарамуччи дал ей надежду на то, что тот потихоньку приходил в себя.</p>
+
+            <p>И действительно. Парень с удовольствием послушал рассказ Нахиды о том, как та планировала поездку на море с семьей, поддержал ее в выборе развлечений и сюрпризов для уже взрослых родственников. Разговоры с Нахидой, в целом, казались очень успокаивающими.</p>
+
+            <p>Казалось, что только она и Тарталья обладали достаточными уровнями эмпатии, чтобы понять, на каком дне находилось ментальное здоровье Скарамуччи. И их присутствие действительно могло скрасить даже отвратительный день, когда мысли одолевали, а воспоминания накатывали болезненным комом.</p>
+
+            <p>И все-таки Скарамучча был очень рад, что поехал…</p>
+
+            <div class="scene-break">✦ ✦ ✦</div>
+
+            <div class="memory-block">
+                <p class="dialogue">То есть, мы теперь встречаемся?</p>
+
+                <p>Скара услышал знакомый голос, с теплом посмотрел в такие родные алые глаза и, соглашаясь, кивнул. Взгляд скользнул по хрупкому стану Кадзухи, затем вернулся к шарику со снегом.</p>
+
+                <p>Казалось, что их история только началась, что все еще было впереди, что еще столько всего успеют, попробуют, разделят на двоих.</p>
+            </div>
+
+            <div class="scene-break">✦ ✦ ✦</div>
+
+            <div class="memory-block">
+                <p>Скара замер трепетно, а затем очень настойчиво подался вперед, вкушая губы Кадзухи как самый сладкий, спасительный нектар. Их разделяли собственные неуверенности и неготовности, так что пока руки вжимались в кожаную обивку, губы и сердца тянулись друг к другу.</p>
+
+                <p>Пианино стояло совсем рядом, молча наблюдая за этой картиной. Музыка могла и хранила в себе все воспоминания, начиная от радостных и счастливых, заканчивая горестными.</p>
+
+                <p>Оно сохранило момент слияния губ двух по уши влюбленных друг в друга людей, оно же скорбело вместе со Скарой, когда Кадзуха безжизненным телом упокоился на его нежных руках.</p>
+            </div>
+
+            <div class="scene-break">✦ ✦ ✦</div>
+
+            <div class="memory-block">
+                <p>Скара почти задохнулся, очутившись в моменте, когда горячее, почти пылающее жаром не только болезни, но и страсти тело Кадзухи прижалось к нему с такой силой, что стон вырвался из губ сам собой. Их первый и последний настоящий раз. Такой нежный и такой чувственный одновременно.</p>
+
+                <p>Жажда прикосновений, объятий, любви, толчков и чужого присутствия была такой сильной, что после предыдущих двух воспоминаний, Скару будто бы пустили в рай, давая насладиться тем, по чему он так изголодался. Физический барьер, все то, что отделяло его от желанного человека, пало, и Кадзуха вместе со Скарой утонули друг в друге, позволяя себе ощутить весь тот спектр любви, который хранился в сердцах с самого начала…</p>
+            </div>
+
+            <div class="scene-break">✦ ✦ ✦</div>
+
+            <p>Скарамучча проснулся и тут же скинул с себя одеяло, чтобы отдышаться от настойчивости своего сна. Он совсем не ожидал, что именно тут, именно в доме Тартальи, на спальном мешке на кухне к нему наконец-то придет долгожданный сон с участием Кадзухи. Он ускользнул также быстро, как когда-то ускользнула жизнь самого Кадзухи из рук Скарамуччи.</p>
+
+            <p>Странный осадок остался после всех этих воспоминаний, но каждое из них было таким ценным и важным, что тоска на мгновения отступила. Почувствовалось присутствие Кадзухи, хотя было понятно, что здесь был явно не этот случай. Скарамучча не мог поговорить со своим парнем во сне, сам Кадзуха не беседовал с ним и не представал в образе ангела или любого другого святого существа.</p>
+
+            <p>Даже Скарамучча во сне не осознавал, что это была всего лишь фантазия, он не контролировал ее, просто наслаждался моментами единения с любимым человеком. Заметив, что Наны не было рядом, парень чуть встревоженно осмотрелся по сторонам и нашел ее глазами сидящей на подоконнике и играющейся с водой в стакане.</p>
+
+            <p>Скарамучча вздохнул и еще раз протер сонные глаза, стараясь убрать всю влагу. За окном ярко светила луна, красиво подсвечивая пушистую шерстку, будто бы специально играясь с ней, чтобы Нана выглядела не просто котенком, а светящимся комочком чистой любви и преданности.</p>
+
+            <p>Подойдя к окну, Скарамучча глянул в окно. Пустой двор и только покачивающиеся еле-еле от ветра качели. Нана выводила на воде непонятные узоры мягкой лапкой, когда ее подняли на руки и погладили за ушками. Малышка не сопротивлялась, а только мяукнула на стакан и замурчала, закрывая глазки от удовольствия.</p>
+
+            <p>Скарамучча постоял еще пару минут у окна и, даже не взглянув ни на воду, ни на свое спальное место, поплелся в гостиную, где на диване развалился Тарталья.</p>
+
+            <p class="dialogue">Просыпайся, — довольно настойчиво потрепав рыжего по голым плечам, шикнул Скарамучча.</p>
+
+            <p>Нана его поддержала, мяукая и осторожно тыкая лапкой в веснушчатую щеку Тартальи. Тот проснулся со скрипом и очень недовольно уставился на друга.</p>
+
+            <p class="dialogue">Что?</p>
+
+            <p>Нана мяукнула рыжему на ухо и улеглась под его щекой так, что тот больше не мог лечь на подушку.</p>
+
+            <p class="dialogue">Я к тебе спать, — тон Скарамуччи не оставил пространства для маневра, так что Тарталье ничего не оставалось, кроме как вздохнуть, улыбнуться и раскрыть одеяло, двигаясь к спинке дивана.</p>
+
+            <p>Скарамучча лег рядом, забирая Нану к себе. Она сразу нашла себе теплое местечко на груди хозяина и заурчала, а Тарталья только и делал, что наблюдал за этой картиной.</p>
+
+            <p class="dialogue">Твоя девушка не будет ревновать, что ты спишь с каким-то мужиком? — Скарамучча пошутил, но сам не улыбнулся, лишь закрыл глаза и выдохнул, постепенно успокаиваясь.</p>
+
+            <p>Рыжий захохотал и покачал головой, щуря хитрые голубые глаза.</p>
+
+            <p class="dialogue">Она ничего не узнает, — поддержал он, устраиваясь поудобнее на оставшемся клочке дивана и обнимая Скарамуччу через живот, — доброй ночи, Мучч.</p>
+
+            <p class="dialogue">Доброй ночи…</p>
+        </article>
+
+        <div class="author-note" style="margin-top: 60px;">
+            <div class="author-note-title">Примечания автора</div>
+            <div class="author-note-content">
+                Вот такая милота… Боже, была б моя воля, описывала бы моменты с Кадзухой из прошлого в каждой главе, но, боюсь, тогда будет перебор( Тарталья все еще пример просто идеального друга…<br><br>
+                Буду очень-очень рада вашим отзывам! Они очень мотивируют продолжать работать дальше 🥹 спасибо огромное каждому, кто остается, чтобы написать что-то после главы, даже если короткое, я всегда очень рада обратной связи в комментариях 🫶🏻<br><br>
+                Чтобы не потеряться в случае чего, можете подписаться на мой тг канальчик) там довольно уютно 🫶🏻<br><br>
+                Всех люблю и всем хорошего настроения, берегите себя 💞
+            </div>
+        </div>
+
+        <nav class="chapter-nav">
+            <a href="chapter-44.html">← Предыдущая</a>
+            <a href="../angels.html">К оглавлению</a>
+            <button class="mark-read-btn" id="markRead" onclick="toggleRead()">Прочитано</button>
+            <a href="chapter-46.html">Следующая →</a>
+        </nav>
+    </div>
+
+    <script>
+        // Фон
+        const canvas = document.getElementById('bg-particles');
+        const ctx = canvas.getContext('2d');
+        let particles = [];
+        let mouseX = 0, mouseY = 0;
+
+        function resize() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
+        resize();
+        window.addEventListener('resize', resize);
+
+        for (let i = 0; i < 40; i++) {
+            particles.push({
+                x: Math.random() * canvas.width,
+                y: Math.random() * canvas.height,
+                size: Math.random() * 1.5 + 0.5,
+                speedX: (Math.random() - 0.5) * 0.15,
+                speedY: (Math.random() - 0.5) * 0.15,
+                opacity: Math.random() * 0.1 + 0.02,
+                hue: Math.random() * 30 - 15
+            });
+        }
+
+        document.addEventListener('mousemove', (e) => { mouseX = e.clientX; mouseY = e.clientY; });
+
+        function animate() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            particles.forEach(p => {
+                const dx = mouseX - p.x, dy = mouseY - p.y;
+                const dist = Math.sqrt(dx * dx + dy * dy);
+                if (dist < 100) { p.x -= dx * 0.008; p.y -= dy * 0.008; }
+                p.x += p.speedX; p.y += p.speedY;
+                if (p.x < 0 || p.x > canvas.width) p.speedX *= -1;
+                if (p.y < 0 || p.y > canvas.height) p.speedY *= -1;
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+                ctx.fillStyle = `hsla(${340 + p.hue}, 50%, 70%, ${p.opacity})`;
+                ctx.fill();
+            });
+            requestAnimationFrame(animate);
+        }
+        animate();
+
+        // Курсор
+        const isMobile = window.matchMedia('(hover: none)').matches;
+        if (!isMobile) {
+            const cursor = document.querySelector('.cursor');
+            const follower = document.querySelector('.cursor-follower');
+            let cX = 0, cY = 0, fX = 0, fY = 0;
+            document.addEventListener('mousemove', (e) => { cX = e.clientX; cY = e.clientY; });
+            function animateCursor() {
+                cursor.style.transform = `translate(${cX - 4}px, ${cY - 4}px)`;
+                fX += (cX - fX) * 0.15; fY += (cY - fY) * 0.15;
+                follower.style.transform = `translate(${fX - 20}px, ${fY - 20}px)`;
+                requestAnimationFrame(animateCursor);
+            }
+            animateCursor();
+            document.querySelectorAll('a, button, .track-item, .progress-bar, .music-track-btn').forEach(el => {
+                el.addEventListener('mouseenter', () => follower.classList.add('hover'));
+                el.addEventListener('mouseleave', () => follower.classList.remove('hover'));
+            });
+        }
+
+        // === ПЛЕЕР ===
+        const tracks = [
+            { name: 'Вторая весна', artist: 'Женя Трофимов, NANSI', src: '../../audio/vtoraya-vesna.mp3' },
+            { name: 'Shape of My Heart', artist: 'Sting', src: '../../audio/shape-of-my-heart.mp3' }
+        ];
+
+        let currentTrack = 0;
+        let isPlaying = false;
+        const audio = new Audio();
+        audio.volume = 0.3;
+
+        const musicFloat = document.getElementById('musicFloat');
+        const musicToggle = document.getElementById('musicToggle');
+        const musicPanel = document.getElementById('musicPanel');
+        const playBtn = document.getElementById('playBtn');
+        const trackName = document.getElementById('trackName');
+        const trackArtist = document.getElementById('trackArtist');
+        const progressFill = document.getElementById('progressFill');
+        const currentTimeEl = document.getElementById('currentTime');
+        const durationEl = document.getElementById('duration');
+        const volumeValue = document.getElementById('volumeValue');
+
+        function playTrackAndShowPlayer(index) {
+            musicFloat.classList.add('visible');
+            musicPanel.classList.add('visible');
+            musicToggle.classList.add('active');
+            playTrack(index);
+        }
+
+        function togglePlayer() {
+            musicPanel.classList.toggle('visible');
+            musicToggle.classList.toggle('active');
+        }
+
+        function playTrack(index) {
+            currentTrack = index;
+            audio.src = tracks[index].src;
+            audio.play().catch(() => {});
+            isPlaying = true;
+            updateUI();
+        }
+
+        function togglePlay() {
+            if (isPlaying) {
+                audio.pause();
+            } else {
+                if (!audio.src) audio.src = tracks[currentTrack].src;
+                audio.play().catch(() => {});
+            }
+            isPlaying = !isPlaying;
+            updateUI();
+        }
+
+        function nextTrack() {
+            currentTrack = (currentTrack + 1) % tracks.length;
+            playTrack(currentTrack);
+        }
+
+        function prevTrack() {
+            currentTrack = (currentTrack - 1 + tracks.length) % tracks.length;
+            playTrack(currentTrack);
+        }
+
+        function setVolume(val) {
+            audio.volume = val / 100;
+            volumeValue.textContent = val + '%';
+        }
+
+        function seekTrack(e) {
+            const rect = e.target.getBoundingClientRect();
+            const percent = (e.clientX - rect.left) / rect.width;
+            audio.currentTime = percent * audio.duration;
+        }
+
+        function formatTime(sec) {
+            if (isNaN(sec)) return '0:00';
+            const m = Math.floor(sec / 60);
+            const s = Math.floor(sec % 60);
+            return m + ':' + (s < 10 ? '0' : '') + s;
+        }
+
+        function updateUI() {
+            trackName.textContent = tracks[currentTrack].name;
+            trackArtist.textContent = tracks[currentTrack].artist;
+            playBtn.textContent = isPlaying ? '⏸' : '▶';
+            musicToggle.classList.toggle('playing', isPlaying);
+            document.querySelectorAll('.track-item').forEach((el, i) => {
+                el.classList.toggle('active', i === currentTrack);
+            });
+        }
+
+        audio.addEventListener('timeupdate', () => {
+            const percent = (audio.currentTime / audio.duration) * 100;
+            progressFill.style.width = percent + '%';
+            currentTimeEl.textContent = formatTime(audio.currentTime);
+        });
+
+        audio.addEventListener('loadedmetadata', () => {
+            durationEl.textContent = formatTime(audio.duration);
+        });
+
+        audio.addEventListener('ended', nextTrack);
+
+        // ПРОЧИТАНО
+        const FIC_ID = 'angels';
+        const CHAPTER = '45';
+
+        function getRead() {
+            const data = JSON.parse(localStorage.getItem('chaptersRead') || '{}');
+            return data[FIC_ID] || [];
+        }
+
+        function saveRead(arr) {
+            const data = JSON.parse(localStorage.getItem('chaptersRead') || '{}');
+            data[FIC_ID] = arr;
+            localStorage.setItem('chaptersRead', JSON.stringify(data));
+        }
+
+        function toggleRead() {
+            let read = getRead();
+            if (read.includes(CHAPTER)) {
+                read = read.filter(c => c !== CHAPTER);
+            } else {
+                read.push(CHAPTER);
+            }
+            saveRead(read);
+            updateReadBtn();
+        }
+
+        function updateReadBtn() {
+            const btn = document.getElementById('markRead');
+            const read = getRead();
+            if (read.includes(CHAPTER)) {
+                btn.classList.add('read');
+                btn.textContent = '✓ Прочитано';
+            } else {
+                btn.classList.remove('read');
+                btn.textContent = 'Прочитано';
+            }
+        }
+
+        updateReadBtn();
+
+        // === КАСТОМНЫЙ СКРОЛЛБАР ===
+        const scrollThumb = document.getElementById('scrollThumb');
+
+        function updateScrollbar() {
+            const scrollHeight = document.documentElement.scrollHeight - window.innerHeight;
+            const scrollPercent = window.scrollY / scrollHeight;
+            const thumbHeight = Math.max((window.innerHeight / document.documentElement.scrollHeight) * window.innerHeight, 50);
+            const thumbTop = scrollPercent * (window.innerHeight - thumbHeight);
+
+            scrollThumb.style.height = thumbHeight + 'px';
+            scrollThumb.style.top = thumbTop + 'px';
+        }
+
+        window.addEventListener('scroll', updateScrollbar);
+        window.addEventListener('resize', updateScrollbar);
+        updateScrollbar();
+
+        document.querySelector('.custom-scrollbar').addEventListener('click', (e) => {
+            const clickPercent = e.clientY / window.innerHeight;
+            const scrollHeight = document.documentElement.scrollHeight - window.innerHeight;
+            window.scrollTo({ top: clickPercent * scrollHeight, behavior: 'smooth' });
+        });
+
+        // === КНОПКА НАВЕРХ ===
+        const scrollBtn = document.getElementById('scrollTop');
+
+        window.addEventListener('scroll', () => {
+            scrollBtn.classList.toggle('visible', window.scrollY > 500);
+            musicFloat.classList.toggle('visible', window.scrollY > 300);
+        });
+
+        scrollBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
+
+        // Розовые запятые
+        document.querySelectorAll('.chapter-content p:not(.thought):not(.memory-block p), .chapter-content .dialogue').forEach(el => {
+            el.innerHTML = el.innerHTML.replace(/,/g, '<span class="comma">,</span>');
+        });
+    </script>
+</body>
+</html>
